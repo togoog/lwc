@@ -171,7 +171,6 @@ export function allocateChildrenHook(vnode: VCustomElement) {
     // In case #2, we will always get a fresh VCustomElement.
     const children = vnode.aChildren || vnode.children;
 
-    vm.aChildren = children;
     if (isTrue(vm.renderer.syntheticShadow)) {
         // slow path
         allocateInSlot(vm, children);
@@ -180,6 +179,8 @@ export function allocateChildrenHook(vnode: VCustomElement) {
         // every child vnode is now allocated, and the host should receive none directly, it receives them via the shadow!
         vnode.children = EmptyArray;
     }
+    // storing the new children collection for disconnection purposes
+    vm.aChildren = children;
 }
 
 export function createViewModelHook(elm: HTMLElement, vnode: VCustomElement) {
