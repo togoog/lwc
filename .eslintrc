@@ -89,7 +89,7 @@
         "template-curly-spacing": "error",
         "yoda": "error",
 
-        "lwc-internal/no-invalid-todo": "error",
+        "lwc-internal/no-invalid-todo": "warn",
 
         // Want to enable if there is consent
         "no-shadow": "off", // 20 violations https://eslint.org/docs/rules/no-shadow	

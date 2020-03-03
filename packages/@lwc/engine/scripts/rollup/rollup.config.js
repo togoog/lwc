@@ -12,7 +12,7 @@ const babel = require('@babel/core');
 const babelFeaturesPlugin = require('@lwc/features/src/babel-plugin');
 
 const { version } = require('../../package.json');
-const entry = path.resolve(__dirname, '../../src/framework/main.ts');
+const entry = path.resolve(__dirname, '../../src/index.ts');
 const targetDirectory = path.resolve(__dirname, '../../dist/');
 
 const banner = `/* proxy-compat-disable */`;

@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-import { setAttribute, removeAttribute, getAttribute, hasAttribute } from '../../env/element';
+
+const { setAttribute, removeAttribute, getAttribute, hasAttribute } = Element.prototype;
 
 // this regular expression is used to transform aria props into aria attributes because
 // that doesn't follow the regular transformation process. e.g.: `aria-labeledby` <=> `ariaLabelBy`

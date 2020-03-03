@@ -9,7 +9,7 @@ import { patch } from './polyfill';
 
 // Global Aria and Role Properties derived from ARIA and Role Attributes.
 // https://wicg.github.io/aom/spec/aria-reflection.html
-export const ElementPrototypeAriaPropertyNames = [
+const ElementPrototypeAriaPropertyNames = [
     'ariaAutoComplete',
     'ariaChecked',
     'ariaCurrent',
