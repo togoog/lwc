@@ -51,6 +51,7 @@ import { hasDynamicChildren } from './hooks';
 import { ReactiveObserver } from '../libs/mutation-tracker';
 import { LightningElement } from './base-lightning-element';
 import { getErrorComponentStack } from '../shared/format';
+import { patchCustomElementWithRestrictions } from './restrictions';
 
 export interface SlotSet {
     [key: string]: VNodes;
@@ -247,6 +248,10 @@ export function createVM(elm: HTMLElement, Ctor: ComponentConstructor, options: 
     // link component to the wire service
     const initializedVm = uninitializedVm as VM;
     linkComponent(initializedVm);
+
+    if (process.env.NODE_ENV !== 'production') {
+        patchCustomElementWithRestrictions(elm);
+    }
 }
 
 function assertIsVM(obj: any): asserts obj is VM {

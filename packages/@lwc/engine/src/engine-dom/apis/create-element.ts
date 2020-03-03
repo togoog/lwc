@@ -15,13 +15,8 @@ import {
     getAssociatedVMIfPresent,
 } from '../../framework/vm';
 import { ComponentConstructor } from '../../framework/component';
-import {
-    EmptyObject,
-    isCircularModuleDependency,
-    resolveCircularModuleDependency,
-} from '../../framework/utils';
+import { isCircularModuleDependency, resolveCircularModuleDependency } from '../../framework/utils';
 import { getComponentDef, setElementProto } from '../../framework/def';
-import { patchCustomElementWithRestrictions } from '../../framework/restrictions';
 import {
     GlobalMeasurementPhase,
     startGlobalMeasure,
@@ -82,10 +77,6 @@ export function createElement(
 
     const def = getComponentDef(Ctor);
     setElementProto(element, def);
-
-    if (process.env.NODE_ENV !== 'production') {
-        patchCustomElementWithRestrictions(element, EmptyObject);
-    }
 
     createVM(element, Ctor, { mode, isRoot: true, owner: null });
 
