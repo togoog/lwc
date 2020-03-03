@@ -143,9 +143,17 @@ export function rerenderVM(vm: VM) {
     rehydrate(vm);
 }
 
-export function appendRootVM(vm: VM) {
+export function connectRootVM(vm: VM) {
+    startGlobalMeasure(GlobalMeasurementPhase.HYDRATE, vm);
+
+    // usually means moving the element from one place to another, which is observable via life-cycle hooks
+    if (vm.state === VMState.connected) {
+        disconnectRootVM(vm);
+    }
     runConnectedCallback(vm);
     rehydrate(vm);
+
+    endGlobalMeasure(GlobalMeasurementPhase.HYDRATE, vm);
 }
 
 export function appendVM(vm: VM) {
@@ -184,7 +192,7 @@ export function removeVM(vm: VM) {
 }
 
 // this method is triggered by the removal of a root element from the DOM.
-export function removeRootVM(vm: VM) {
+export function disconnectRootVM(vm: VM) {
     resetComponentStateWhenRemoved(vm);
 }
 

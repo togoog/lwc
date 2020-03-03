@@ -9,8 +9,8 @@ import { ArrayMap, getOwnPropertyNames, isNull, isObject, isUndefined } from '@l
 import { ComponentConstructor } from '../../framework/component';
 import {
     createVM,
-    appendRootVM,
-    removeRootVM,
+    connectRootVM,
+    disconnectRootVM,
     getAssociatedVM,
     CreateVMInit,
 } from '../../framework/vm';
@@ -55,11 +55,11 @@ export function buildCustomElementConstructor(
         }
         connectedCallback() {
             const vm = getAssociatedVM(this);
-            appendRootVM(vm);
+            connectRootVM(vm);
         }
         disconnectedCallback() {
             const vm = getAssociatedVM(this);
-            removeRootVM(vm);
+            disconnectRootVM(vm);
         }
         attributeChangedCallback(attrName, oldValue, newValue) {
             if (oldValue === newValue) {

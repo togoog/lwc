@@ -8,20 +8,14 @@ import { isFunction, isNull, isObject, isUndefined, toString } from '@lwc/shared
 
 import {
     createVM,
-    removeRootVM,
-    appendRootVM,
+    disconnectRootVM,
+    connectRootVM,
     getAssociatedVM,
-    VMState,
     getAssociatedVMIfPresent,
 } from '../../framework/vm';
 import { ComponentConstructor } from '../../framework/component';
 import { isCircularModuleDependency, resolveCircularModuleDependency } from '../../framework/utils';
 import { getComponentDef, setElementProto } from '../../framework/def';
-import {
-    GlobalMeasurementPhase,
-    startGlobalMeasure,
-    endGlobalMeasure,
-} from '../../framework/performance-timing';
 
 import { nodeConnected, nodeDisconnected } from '../node-reactions';
 
@@ -82,18 +76,12 @@ export function createElement(
 
     nodeConnected(element, () => {
         const vm = getAssociatedVM(element);
-        startGlobalMeasure(GlobalMeasurementPhase.HYDRATE, vm);
-        if (vm.state === VMState.connected) {
-            // usually means moving the element from one place to another, which is observable via life-cycle hooks
-            removeRootVM(vm);
-        }
-        appendRootVM(vm);
-        endGlobalMeasure(GlobalMeasurementPhase.HYDRATE, vm);
+        connectRootVM(vm);
     });
 
     nodeDisconnected(element, () => {
         const vm = getAssociatedVM(element);
-        removeRootVM(vm);
+        disconnectRootVM(vm);
     });
 
     return element;
