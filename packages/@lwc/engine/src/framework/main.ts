@@ -6,7 +6,6 @@
  */
 
 // TODO [#1296]: Revisit these exports and figure out a better separation
-export { createElement } from './upgrade';
 export { getComponentDef, isComponentConstructor, getComponentConstructor } from './def';
 export { BaseLightningElement as LightningElement } from './base-lightning-element';
 export { register } from './services';
@@ -14,13 +13,11 @@ export { unwrap } from './membrane';
 export { registerTemplate, sanitizeAttribute } from './secure-template';
 export { registerComponent } from './component';
 export { registerDecorators } from './decorators/register';
-export { isNodeFromTemplate } from './vm';
 
 export { default as api } from './decorators/api';
 export { default as track } from './decorators/track';
 export { default as readonly } from './decorators/readonly';
 export { default as wire } from './decorators/wire';
 export { default as decorate } from './decorators/decorate';
-export { buildCustomElementConstructor } from './wc';
 
 export { setFeatureFlag, setFeatureFlagForTest } from '@lwc/features';

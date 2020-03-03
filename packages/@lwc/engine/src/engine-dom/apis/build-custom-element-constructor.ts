@@ -5,13 +5,20 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
 import { ArrayMap, getOwnPropertyNames, isNull, isObject, isUndefined } from '@lwc/shared';
-import { ComponentConstructor } from './component';
-import { createVM, appendRootVM, removeRootVM, getAssociatedVM, CreateVMInit } from './vm';
-import { EmptyObject } from './utils';
-import { getComponentDef } from './def';
-import { getPropNameFromAttrName, isAttributeLocked } from './attributes';
-import { HTMLElementConstructor } from './base-bridge-element';
-import { patchCustomElementWithRestrictions } from './restrictions';
+
+import { ComponentConstructor } from '../../framework/component';
+import {
+    createVM,
+    appendRootVM,
+    removeRootVM,
+    getAssociatedVM,
+    CreateVMInit,
+} from '../../framework/vm';
+import { EmptyObject } from '../../framework/utils';
+import { getComponentDef } from '../../framework/def';
+import { getPropNameFromAttrName, isAttributeLocked } from '../../framework/attributes';
+import { HTMLElementConstructor } from '../../framework/base-bridge-element';
+import { patchCustomElementWithRestrictions } from '../../framework/restrictions';
 
 /**
  * This function builds a Web Component class from a LWC constructor
@@ -35,12 +42,14 @@ export function buildCustomElementConstructor(
         isRoot: true,
         owner: null,
     };
+
     if (isObject(options) && !isNull(options)) {
         const { mode } = options;
         if (mode === 'closed') {
             normalizedOptions.mode = mode;
         }
     }
+
     return class extends BaseElement {
         constructor() {
             super();
