@@ -4,62 +4,53 @@
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-import { ArrayMap, getOwnPropertyNames, isNull, isObject, isUndefined } from '@lwc/shared';
+import { ArrayMap, getOwnPropertyNames, isUndefined } from '@lwc/shared';
+import { LightningElement, getComponentDef } from '../../framework/main';
 
-import { ComponentConstructor } from '../../framework/component';
-import {
-    createVM,
-    connectRootVM,
-    disconnectRootVM,
-    getAssociatedVM,
-    CreateVMInit,
-} from '../../framework/vm';
-import { getComponentDef } from '../../framework/def';
+import { createVM, appendRootVM, removeRootVM, getAssociatedVM } from '../../framework/vm';
 import { getPropNameFromAttrName, isAttributeLocked } from '../../framework/attributes';
-import { HTMLElementConstructor } from '../../framework/base-bridge-element';
 
 /**
- * This function builds a Web Component class from a LWC constructor
- * so it can be registered as a new element via customElements.define()
- * at any given time. E.g.:
+ * EXPERIMENTAL: This function builds a Web Component class from a LWC constructor so it can be
+ * registered as a new element via customElements.define() at any given time.
  *
- *      import { buildCustomElementConstructor } from 'lwc';
- *      import Foo from 'ns/foo';
- *      const WC = buildCustomElementConstructor(Foo);
- *      customElements.define('x-foo', WC);
- *      const elm = document.createElement('x-foo');
- *
+ * @example
+ * ```
+ * import { buildCustomElementConstructor } from 'lwc';
+ * import Foo from 'ns/foo';
+ * const WC = buildCustomElementConstructor(Foo);
+ * customElements.define('x-foo', WC);
+ * const elm = document.createElement('x-foo');
+ * ```
  */
 export function buildCustomElementConstructor(
-    Ctor: ComponentConstructor,
-    options?: ShadowRootInit
-): HTMLElementConstructor {
-    const { props, bridge: BaseElement } = getComponentDef(Ctor);
-    const normalizedOptions: CreateVMInit = {
-        mode: 'open',
-        isRoot: true,
-        owner: null,
-    };
-
-    if (isObject(options) && !isNull(options)) {
-        const { mode } = options;
-        if (mode === 'closed') {
-            normalizedOptions.mode = mode;
-        }
+    Ctor: typeof LightningElement,
+    options?: {
+        mode?: 'open' | 'closed';
     }
+): typeof HTMLElement {
+    const { props, bridge: BaseElement } = getComponentDef(Ctor);
+    const mode =
+        isUndefined(options) || isUndefined(options.mode) || options.mode !== 'closed'
+            ? 'open'
+            : 'closed';
 
     return class extends BaseElement {
         constructor() {
             super();
-            createVM(this, Ctor, normalizedOptions);
+            createVM(this, Ctor, {
+                mode,
+                isRoot: true,
+                owner: null,
+            });
         }
         connectedCallback() {
             const vm = getAssociatedVM(this);
-            connectRootVM(vm);
+            appendRootVM(vm);
         }
         disconnectedCallback() {
             const vm = getAssociatedVM(this);
-            disconnectRootVM(vm);
+            removeRootVM(vm);
         }
         attributeChangedCallback(attrName, oldValue, newValue) {
             if (oldValue === newValue) {

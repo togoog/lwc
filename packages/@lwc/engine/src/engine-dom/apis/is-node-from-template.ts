@@ -10,9 +10,8 @@ import { isFalse, isUndefined } from '@lwc/shared';
 const useSyntheticShadow = true;
 
 /**
- * EXPERIMENTAL: This function detects whether or not a Node is
- * controlled by a LWC template. This API is subject to
- * change or being removed.
+ * EXPERIMENTAL: This function detects whether or not a Node is controlled by a LWC template. This
+ * API is subject to change or being removed.
  */
 export function isNodeFromTemplate(node: Node): boolean {
     if (isFalse(node instanceof Node)) {

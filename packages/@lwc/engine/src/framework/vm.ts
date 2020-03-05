@@ -50,8 +50,8 @@ import { updateDynamicChildren, updateStaticChildren } from '../3rdparty/snabbdo
 import { hasDynamicChildren } from './hooks';
 import { ReactiveObserver } from '../libs/mutation-tracker';
 import { LightningElement } from './base-lightning-element';
-import { getErrorComponentStack } from '../shared/format';
 import { patchCustomElementWithRestrictions } from './restrictions';
+import { getErrorComponentStack } from '../shared/format';
 
 export interface SlotSet {
     [key: string]: VNodes;
@@ -143,13 +143,14 @@ export function rerenderVM(vm: VM) {
     rehydrate(vm);
 }
 
-export function connectRootVM(vm: VM) {
+export function appendRootVM(vm: VM) {
     startGlobalMeasure(GlobalMeasurementPhase.HYDRATE, vm);
 
     // usually means moving the element from one place to another, which is observable via life-cycle hooks
     if (vm.state === VMState.connected) {
-        disconnectRootVM(vm);
+        removeRootVM(vm);
     }
+
     runConnectedCallback(vm);
     rehydrate(vm);
 
@@ -192,7 +193,7 @@ export function removeVM(vm: VM) {
 }
 
 // this method is triggered by the removal of a root element from the DOM.
-export function disconnectRootVM(vm: VM) {
+export function removeRootVM(vm: VM) {
     resetComponentStateWhenRemoved(vm);
 }
 
@@ -203,7 +204,7 @@ export interface CreateVMInit {
     owner: VM | null;
 }
 
-export function createVM(elm: HTMLElement, Ctor: ComponentConstructor, options: CreateVMInit) {
+export function createVM(elm: HTMLElement, Ctor: ComponentConstructor, options: CreateVMInit): VM {
     if (process.env.NODE_ENV !== 'production') {
         assert.invariant(
             elm instanceof HTMLElement,
@@ -260,6 +261,8 @@ export function createVM(elm: HTMLElement, Ctor: ComponentConstructor, options: 
     if (process.env.NODE_ENV !== 'production') {
         patchCustomElementWithRestrictions(elm);
     }
+
+    return initializedVm;
 }
 
 function assertIsVM(obj: any): asserts obj is VM {

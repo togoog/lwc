@@ -6,36 +6,28 @@
  */
 import { isFunction, isNull, isObject, isUndefined, toString } from '@lwc/shared';
 
-import {
-    createVM,
-    disconnectRootVM,
-    connectRootVM,
-    getAssociatedVM,
-    getAssociatedVMIfPresent,
-} from '../../framework/vm';
-import { ComponentConstructor } from '../../framework/component';
-import { isCircularModuleDependency, resolveCircularModuleDependency } from '../../framework/utils';
-import { getComponentDef, setElementProto } from '../../framework/def';
+import { LightningElement, getComponentDef } from '../../framework/main';
+
+import { createVM, appendRootVM, removeRootVM, getAssociatedVMIfPresent } from '../../framework/vm';
+import { setElementProto } from '../../framework/def';
 
 import { nodeConnected, nodeDisconnected } from '../node-reactions';
 
 /**
- * EXPERIMENTAL: This function is almost identical to document.createElement
- * (https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement)
- * with the slightly difference that in the options, you can pass the `is`
- * property set to a Constructor instead of just a string value. The intent
- * is to allow the creation of an element controlled by LWC without having
- * to register the element as a custom element. E.g.:
+ * EXPERIMENTAL: This function is almost identical to document.createElement with the slightly
+ * difference that in the options, you can pass the `is` property set to a Constructor instead of
+ * just a string value. The intent is to allow the creation of an element controlled by LWC without
+ * having to register the element as a custom element.
  *
+ * @example
+ * ```
  * const el = createElement('x-foo', { is: FooCtor });
- *
- * If the value of `is` attribute is not a constructor,
- * then it throws a TypeError.
+ * ```
  */
 export function createElement(
     sel: string,
     options: {
-        is: ComponentConstructor;
+        is: typeof LightningElement;
         mode?: 'open' | 'closed';
     }
 ): HTMLElement {
@@ -47,42 +39,32 @@ export function createElement(
         );
     }
 
-    let Ctor = options.is;
+    const Ctor = options.is;
     if (!isFunction(Ctor)) {
         throw new TypeError(
             `"createElement" function expects a "is" option with a valid component constructor.`
         );
     }
 
-    const mode = options.mode !== 'closed' ? 'open' : 'closed';
-
-    // Create element with correct tagName
     const element = document.createElement(sel);
-    if (!isUndefined(getAssociatedVMIfPresent(element))) {
-        // There is a possibility that a custom element is registered under tagName,
-        // in which case, the initialization is already carry on, and there is nothing else
-        // to do here.
-        return element;
-    }
 
-    if (isCircularModuleDependency(Ctor)) {
-        Ctor = resolveCircularModuleDependency(Ctor);
+    // There is a possibility that a custom element is registered under tagName, in which case, the
+    // initialization is already carry on, and there is nothing else to do here.
+    if (!isUndefined(getAssociatedVMIfPresent(element))) {
+        return element;
     }
 
     const def = getComponentDef(Ctor);
     setElementProto(element, def);
 
-    createVM(element, Ctor, { mode, isRoot: true, owner: null });
-
-    nodeConnected(element, () => {
-        const vm = getAssociatedVM(element);
-        connectRootVM(vm);
+    const vm = createVM(element, def.ctor, {
+        mode: options.mode !== 'closed' ? 'open' : 'closed',
+        isRoot: true,
+        owner: null,
     });
 
-    nodeDisconnected(element, () => {
-        const vm = getAssociatedVM(element);
-        disconnectRootVM(vm);
-    });
+    nodeConnected(element, () => appendRootVM(vm));
+    nodeDisconnected(element, () => removeRootVM(vm));
 
     return element;
 }
