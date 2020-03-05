@@ -1,74 +1,80 @@
+/*
+ * Copyright (c) 2020, salesforce.com, inc.
+ * All rights reserved.
+ * SPDX-License-Identifier: MIT
+ * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
+ */
 import { isUndefined } from '@lwc/shared';
 
 import { Renderer } from '../framework/vm';
 
 const doc = document;
 
-function insert(node: Node, parent: Node, anchor: Node | null): void {
-    parent.insertBefore(node, anchor);
-}
-
-function remove(node: Node, parent: Node): void {
-    parent.removeChild(node);
-}
-
-function createElement(tagName: string): HTMLElement;
-function createElement(tagName: string, namespace?: string): Element {
-    return isUndefined(namespace)
-        ? doc.createElement(tagName)
-        : doc.createElementNS(namespace, tagName);
-}
-
-function createText(content: string): Text {
-    return doc.createTextNode(content);
-}
-
-function setText(node: Node, content: string): void {
-    node.nodeValue = content;
-}
-
-function setAttribute(element: Element, name: string, value: string, namespace?: string): void {
-    if (isUndefined(namespace)) {
-        element.setAttribute(name, value);
-    } else {
-        element.setAttributeNS(namespace, name, value);
-    }
-}
-
-function removeAttribute(element: Element, name: string, namespace?: string): void {
-    if (isUndefined(namespace)) {
-        element.removeAttribute(name);
-    } else {
-        element.removeAttributeNS(namespace, name);
-    }
-}
-
-function addEventListener(target: Node, type: string, callback: (event: Event) => any): void {
-    target.addEventListener(type, callback);
-}
-
-function removeEventListener(target: Node, type: string, callback: (event: Event) => any): void {
-    target.removeEventListener(type, callback);
-}
-
-function dispatchEvent(target: Node, event: Event): void {
-    target.dispatchEvent(event);
-}
-
-function getClassList(element: Element): DOMTokenList {
-    return element.classList;
-}
-
 export const renderer: Renderer<Node, Element> = {
-    insert,
-    remove,
-    createElement,
-    createText,
-    setText,
-    setAttribute,
-    removeAttribute,
-    addEventListener,
-    removeEventListener,
-    dispatchEvent,
-    getClassList,
+    insert(node, parent, anchor) {
+        parent.insertBefore(node, anchor);
+    },
+    remove(node, parent) {
+        parent.removeChild(node);
+    },
+    createElement(tagName, namespace) {
+        return isUndefined(namespace)
+            ? doc.createElement(tagName)
+            : doc.createElementNS(namespace, tagName);
+    },
+    createText(content) {
+        return doc.createTextNode(content);
+    },
+    setText(node, content) {
+        node.nodeValue = content;
+    },
+    getAttribute(element, name, namespace) {
+        return isUndefined(namespace)
+            ? element.getAttribute(name)
+            : element.getAttributeNS(namespace, name);
+    },
+    setAttribute(element, name, value, namespace) {
+        if (isUndefined(namespace)) {
+            element.setAttribute(name, value);
+        } else {
+            element.setAttributeNS(namespace, name, value);
+        }
+    },
+    removeAttribute(element, name, namespace) {
+        if (isUndefined(namespace)) {
+            element.removeAttribute(name);
+        } else {
+            element.removeAttributeNS(namespace, name);
+        }
+    },
+    addEventListener(target, type, callback) {
+        target.addEventListener(type, callback);
+    },
+    removeEventListener(target, type, callback) {
+        target.removeEventListener(type, callback);
+    },
+    dispatchEvent(target, event) {
+        return target.dispatchEvent(event);
+    },
+    getClassList(element) {
+        return element.classList;
+    },
+    getBoundingClientRect(element) {
+        return element.getBoundingClientRect();
+    },
+    querySelector(element, selectors) {
+        return element.querySelector(selectors);
+    },
+    querySelectorAll(element, selectors) {
+        return element.querySelectorAll(selectors);
+    },
+    getElementsByTagName(element, tagNameOrWildCard) {
+        return element.getElementsByTagName(tagNameOrWildCard);
+    },
+    getElementsByClassName(element, names) {
+        return element.getElementsByClassName(names);
+    },
+    isConnected(node) {
+        return node.isConnected;
+    },
 };

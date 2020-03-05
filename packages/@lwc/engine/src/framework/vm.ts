@@ -55,17 +55,24 @@ import { getErrorComponentStack } from '../shared/format';
 
 // TODO: Replace the any with some actual type. This is silenting some of the type issues we have.
 export interface Renderer<HostNode = any, HostElement = any> {
-    insert(node: HostNode, parent: HostNode, anchor: HostNode | null): void;
-    remove(node: HostNode, parent: HostNode): void;
+    insert(node: HostNode, parent: HostElement, anchor: HostNode | null): void;
+    remove(node: HostNode, parent: HostElement): void;
     createElement(tagName: string, namespace?: string): HostElement;
     createText(content: string): HostNode;
     setText(node: HostNode, content: string): void;
+    getAttribute(element: HostElement, name: string, namespace?: string): string | null;
     setAttribute(element: HostElement, name: string, value: string, namespace?: string): void;
     removeAttribute(element: HostElement, name: string, namespace?: string): void;
-    addEventListener(target: Node, type: string, callback: (event: Event) => any): void;
-    removeEventListener(target: Node, type: string, callback: (event: Event) => any): void;
-    dispatchEvent(target: Node, event: Event): void;
-    getClassList(element: Element): DOMTokenList;
+    addEventListener(target: HostElement, type: string, callback: (event: Event) => any): void;
+    removeEventListener(target: HostElement, type: string, callback: (event: Event) => any): void;
+    dispatchEvent(target: HostNode, event: Event): boolean;
+    getClassList(element: HostElement): DOMTokenList;
+    getBoundingClientRect(element: HostElement): ClientRect;
+    querySelector(element: HostElement, selectors: string): HostElement | null;
+    querySelectorAll(element: HostElement, selectors: string): NodeList;
+    getElementsByTagName(element: HostElement, tagNameOrWildCard: string): HTMLCollection;
+    getElementsByClassName(element: HostElement, names: string): HTMLCollection;
+    isConnected(node: HostNode): boolean;
 }
 
 export interface SlotSet {
@@ -78,15 +85,16 @@ export enum VMState {
     disconnected,
 }
 
-export interface UninitializedVM {
+// TODO: Replace the any with some actual type. This is silenting some of the type issues we have.
+export interface UninitializedVM<HostNode = any, HostElement = any> {
     /** Component Element Back-pointer */
-    readonly elm: HTMLElement;
+    readonly elm: HostElement;
     /** Component Definition */
     readonly def: ComponentDef;
     /** Component Context Object */
     readonly context: Context;
     /** Back-pointer to the owner VM or null for root elements */
-    readonly owner: VM | null;
+    readonly owner: VM<HostNode, HostElement> | null;
     /** Component renderer APIs */
     readonly renderer: Renderer;
     /** Component Creation Index */
@@ -123,7 +131,8 @@ export interface UninitializedVM {
     oar?: Record<PropertyKey, ReactiveObserver>;
 }
 
-export interface VM extends UninitializedVM {
+export interface VM<HostNode = any, HostElement = any>
+    extends UninitializedVM<HostNode, HostElement> {
     cmpTemplate: Template;
     component: ComponentInterface;
     cmpRoot: ShadowRoot;
@@ -214,15 +223,15 @@ export function removeRootVM(vm: VM) {
     resetComponentStateWhenRemoved(vm);
 }
 
-export function createVM(
-    elm: HTMLElement,
+export function createVM<HostNode = any, HostElement = any>(
+    elm: HostElement,
     Ctor: ComponentConstructor,
     options: {
         mode: 'open' | 'closed';
         // custom settings for now
         isRoot?: boolean;
         owner: VM | null;
-        renderer: Renderer;
+        renderer: Renderer<HostNode, HostElement>;
     }
 ): VM {
     if (process.env.NODE_ENV !== 'production') {
@@ -234,7 +243,7 @@ export function createVM(
     const def = getComponentDef(Ctor);
     const { isRoot, mode, owner, renderer } = options;
     idx += 1;
-    const uninitializedVm: UninitializedVM = {
+    const uninitializedVm: UninitializedVM<HostNode, HostElement> = {
         // component creation index is defined once, and never reset, it can
         // be preserved from one insertion to another without any issue
         idx,
@@ -280,7 +289,7 @@ export function createVM(
     linkComponent(initializedVm);
 
     if (process.env.NODE_ENV !== 'production') {
-        patchCustomElementWithRestrictions(elm);
+        patchCustomElementWithRestrictions((elm as unknown) as HTMLElement);
     }
 
     return initializedVm;
