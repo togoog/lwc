@@ -47,7 +47,8 @@ export function createElement(
         );
     }
 
-    const element = renderer.createElement(tagName);
+    // TODO: Find a better way to do avoid the type guard here.
+    const element = renderer.createElement(tagName) as HTMLElement;
 
     // There is a possibility that a custom element is registered under tagName, in which case, the
     // initialization is already carry on, and there is nothing else to do here.

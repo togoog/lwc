@@ -53,11 +53,19 @@ import { LightningElement } from './base-lightning-element';
 import { patchCustomElementWithRestrictions } from './restrictions';
 import { getErrorComponentStack } from '../shared/format';
 
+// TODO: Replace the any with some actual type. This is silenting some of the type issues we have.
 export interface Renderer<HostNode = any, HostElement = any> {
     insert(node: HostNode, parent: HostNode, anchor: HostNode | null): void;
     remove(node: HostNode, parent: HostNode): void;
-    createElement(tagName: string): HostElement;
+    createElement(tagName: string, namespace?: string): HostElement;
     createText(content: string): HostNode;
+    setText(node: HostNode, content: string): void;
+    setAttribute(element: HostElement, name: string, value: string, namespace?: string): void;
+    removeAttribute(element: HostElement, name: string, namespace?: string): void;
+    addEventListener(target: Node, type: string, callback: (event: Event) => any): void;
+    removeEventListener(target: Node, type: string, callback: (event: Event) => any): void;
+    dispatchEvent(target: Node, event: Event): void;
+    getClassList(element: Element): DOMTokenList;
 }
 
 export interface SlotSet {

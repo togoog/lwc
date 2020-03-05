@@ -53,9 +53,11 @@ function createAllEventListeners(vnode: VNode) {
     const listener: VNodeEventListener = ((vnode as InteractiveVNode).listener = createListener());
     listener.vnode = vnode;
 
+    const { addEventListener } = vnode.owner.renderer;
+
     let name;
     for (name in on) {
-        elm.addEventListener(name, listener);
+        addEventListener(elm, name, listener);
     }
 }
 

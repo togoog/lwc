@@ -19,7 +19,7 @@ function createClassAttribute(vnode: VNode) {
         return;
     }
 
-    const { classList } = elm as Element;
+    const classList = vnode.owner.renderer.getClassList(elm as Element);
 
     for (const name in classMap) {
         classList.add(name);

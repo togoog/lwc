@@ -56,20 +56,24 @@ export function updateNodeHook(oldVnode: VNode, vnode: VNode) {
 }
 
 export function insertNodeHook(vnode: VNode, parentNode: Node, referenceNode: Node | null) {
+    const { insert } = vnode.owner.renderer;
+
     if (process.env.NODE_ENV !== 'production') {
         unlockDomMutation();
     }
-    parentNode.insertBefore(vnode.elm!, referenceNode);
+    insert(vnode.elm, parentNode, referenceNode);
     if (process.env.NODE_ENV !== 'production') {
         lockDomMutation();
     }
 }
 
 export function removeNodeHook(vnode: VNode, parentNode: Node) {
+    const { remove } = vnode.owner.renderer;
+
     if (process.env.NODE_ENV !== 'production') {
         unlockDomMutation();
     }
-    parentNode.removeChild(vnode.elm!);
+    remove(vnode.elm, parentNode);
     if (process.env.NODE_ENV !== 'production') {
         lockDomMutation();
     }

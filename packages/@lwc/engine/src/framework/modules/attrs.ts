@@ -42,6 +42,8 @@ function updateAttrs(oldVnode: VElement, vnode: VElement) {
     // update modified attributes, add new attributes
     // this routine is only useful for data-* attributes in all kind of elements
     // and aria-* in standard elements (custom elements will use props for these)
+    const { setAttribute, removeAttribute } = vnode.owner.renderer;
+
     for (key in attrs) {
         const cur = attrs[key];
         const old = (oldAttrs as any)[key];
@@ -49,14 +51,14 @@ function updateAttrs(oldVnode: VElement, vnode: VElement) {
             unlockAttribute(elm, key);
             if (StringCharCodeAt.call(key, 3) === ColonCharCode) {
                 // Assume xml namespace
-                elm.setAttributeNS(xmlNS, key, cur as string);
+                setAttribute(elm, key, cur as string, xmlNS);
             } else if (StringCharCodeAt.call(key, 5) === ColonCharCode) {
                 // Assume xlink namespace
-                elm.setAttributeNS(xlinkNS, key, cur as string);
+                setAttribute(elm, key, cur as string, xlinkNS);
             } else if (isNull(cur)) {
-                elm.removeAttribute(key);
+                removeAttribute(elm, key);
             } else {
-                elm.setAttribute(key, cur as string);
+                setAttribute(elm, key, cur as string);
             }
             lockAttribute(elm, key);
         }

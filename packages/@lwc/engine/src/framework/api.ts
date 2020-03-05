@@ -95,7 +95,14 @@ const SymbolIterator = Symbol.iterator;
 
 const TextHook: Hooks = {
     create: (vnode: VNode) => {
-        vnode.elm = document.createTextNode(vnode.text!);
+        const {
+            text,
+            owner: {
+                renderer: { createText },
+            },
+        } = vnode;
+
+        vnode.elm = createText(text!);
         linkNodeToShadow(vnode);
     },
     update: updateNodeHook,
@@ -111,17 +118,23 @@ const TextHook: Hooks = {
 // Custom Element that is inserted via a template.
 const ElementHook: Hooks = {
     create: (vnode: VElement) => {
-        const { data, sel, clonedElement } = vnode;
-        const { ns } = data;
+        const {
+            sel,
+            clonedElement,
+            data: { ns },
+            owner: {
+                renderer: { createElement },
+            },
+        } = vnode;
+
         // TODO [#1364]: supporting the ability to inject a cloned StyleElement via a vnode this is
         // used for style tags for native shadow
         if (isUndefined(clonedElement)) {
-            vnode.elm = isUndefined(ns)
-                ? document.createElement(sel)
-                : document.createElementNS(ns, sel);
+            vnode.elm = createElement(sel, ns);
         } else {
             vnode.elm = clonedElement;
         }
+
         linkNodeToShadow(vnode);
         fallbackElmHook(vnode);
         createElmHook(vnode);
@@ -145,8 +158,14 @@ const ElementHook: Hooks = {
 
 const CustomElementHook: Hooks = {
     create: (vnode: VCustomElement) => {
-        const { sel } = vnode;
-        vnode.elm = document.createElement(sel);
+        const {
+            sel,
+            owner: {
+                renderer: { createElement },
+            },
+        } = vnode;
+
+        vnode.elm = createElement(sel);
         linkNodeToShadow(vnode);
         createViewModelHook(vnode);
         allocateChildrenHook(vnode);
