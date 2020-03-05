@@ -12,15 +12,10 @@ const babel = require('@babel/core');
 const babelFeaturesPlugin = require('@lwc/features/src/babel-plugin');
 
 const { version } = require('../../package.json');
-const entry = path.resolve(__dirname, '../../src/index.ts');
 const targetDirectory = path.resolve(__dirname, '../../dist/');
 
 const banner = `/* proxy-compat-disable */`;
 const footer = `/** version: ${version} */`;
-
-function generateTargetName({ format }) {
-    return ['engine', format === 'cjs' ? '.cjs' : '', '.js'].join('');
-}
 
 function ignoreCircularDependencies({ code, message }) {
     if (code !== 'CIRCULAR_DEPENDENCY') {
@@ -39,13 +34,13 @@ function rollupFeaturesPlugin() {
     };
 }
 
-function rollupConfig({ format = 'es' } = {}) {
+function rollupConfigDom({ format = 'es' } = {}) {
     return {
-        input: entry,
+        input: path.resolve(__dirname, '../../src/engine-dom/index.ts'),
         onwarn: ignoreCircularDependencies,
         output: {
             name: 'LWC',
-            file: path.join(targetDirectory, generateTargetName({ format })),
+            file: path.join(targetDirectory, `engine${format === 'cjs' ? '.cjs' : ''}.js`),
             format,
             banner: banner,
             footer: footer,
@@ -62,4 +57,32 @@ function rollupConfig({ format = 'es' } = {}) {
     };
 }
 
-module.exports = [rollupConfig({ format: 'es' }), rollupConfig({ format: 'cjs' })];
+function rollupConfigNode({ format = 'es' } = {}) {
+    return {
+        input: path.resolve(__dirname, '../../src/engine-node/index.ts'),
+        onwarn: ignoreCircularDependencies,
+        output: {
+            name: 'LWC',
+            file: path.join(targetDirectory, `engine-node${format === 'cjs' ? '.cjs' : ''}.js`),
+            format,
+            banner: banner,
+            footer: footer,
+        },
+        plugins: [
+            nodeResolve({ only: [/^@lwc\//, 'observable-membrane'] }),
+            rollupTypescriptPlugin({
+                target: 'es2017',
+                typescript,
+                include: ['**/*.ts', '/**/node_modules/**/*.js', '*.ts', '/**/*.js'],
+            }),
+            rollupFeaturesPlugin(),
+        ],
+    };
+}
+
+module.exports = [
+    rollupConfigDom({ format: 'es' }),
+    rollupConfigDom({ format: 'cjs' }),
+    rollupConfigNode({ format: 'es' }),
+    rollupConfigNode({ format: 'cjs' }),
+];
