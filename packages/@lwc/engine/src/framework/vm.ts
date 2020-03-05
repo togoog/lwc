@@ -53,6 +53,13 @@ import { LightningElement } from './base-lightning-element';
 import { patchCustomElementWithRestrictions } from './restrictions';
 import { getErrorComponentStack } from '../shared/format';
 
+export interface Renderer<HostNode = any, HostElement = any> {
+    insert(node: HostNode, parent: HostNode, anchor: HostNode | null): void;
+    remove(node: HostNode, parent: HostNode): void;
+    createElement(tagName: string): HostElement;
+    createText(content: string): HostNode;
+}
+
 export interface SlotSet {
     [key: string]: VNodes;
 }
@@ -72,6 +79,8 @@ export interface UninitializedVM {
     readonly context: Context;
     /** Back-pointer to the owner VM or null for root elements */
     readonly owner: VM | null;
+    /** Component renderer APIs */
+    readonly renderer: Renderer;
     /** Component Creation Index */
     idx: number;
     /** Component state, analogous to Element.isConnected */
@@ -197,14 +206,17 @@ export function removeRootVM(vm: VM) {
     resetComponentStateWhenRemoved(vm);
 }
 
-export interface CreateVMInit {
-    mode: 'open' | 'closed';
-    // custom settings for now
-    isRoot?: boolean;
-    owner: VM | null;
-}
-
-export function createVM(elm: HTMLElement, Ctor: ComponentConstructor, options: CreateVMInit): VM {
+export function createVM(
+    elm: HTMLElement,
+    Ctor: ComponentConstructor,
+    options: {
+        mode: 'open' | 'closed';
+        // custom settings for now
+        isRoot?: boolean;
+        owner: VM | null;
+        renderer: Renderer;
+    }
+): VM {
     if (process.env.NODE_ENV !== 'production') {
         assert.invariant(
             elm instanceof HTMLElement,
@@ -212,7 +224,7 @@ export function createVM(elm: HTMLElement, Ctor: ComponentConstructor, options: 
         );
     }
     const def = getComponentDef(Ctor);
-    const { isRoot, mode, owner } = options;
+    const { isRoot, mode, owner, renderer } = options;
     idx += 1;
     const uninitializedVm: UninitializedVM = {
         // component creation index is defined once, and never reset, it can
@@ -226,6 +238,7 @@ export function createVM(elm: HTMLElement, Ctor: ComponentConstructor, options: 
         def,
         owner,
         elm,
+        renderer,
         data: EmptyObject,
         context: create(null),
         cmpProps: create(null),

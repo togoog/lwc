@@ -5,5 +5,15 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
 const { appendChild, insertBefore, replaceChild, removeChild } = Node.prototype;
+const { createElement, createTextNode } = document;
 
-export { appendChild, insertBefore, replaceChild, removeChild };
+export {
+    // Node.prototype
+    appendChild,
+    insertBefore,
+    replaceChild,
+    removeChild,
+    // document
+    createElement,
+    createTextNode,
+};

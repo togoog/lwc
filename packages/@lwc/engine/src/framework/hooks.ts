@@ -186,6 +186,7 @@ export function createViewModelHook(vnode: VCustomElement) {
     createVM(elm, ctor, {
         mode,
         owner,
+        renderer: owner.renderer,
     });
     if (process.env.NODE_ENV !== 'production') {
         assert.isTrue(

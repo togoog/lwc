@@ -5,7 +5,9 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
 import { ArrayMap, getOwnPropertyNames, isUndefined } from '@lwc/shared';
+
 import { LightningElement, getComponentDef } from '../../framework/main';
+import { renderer } from '../renderer';
 
 import { createVM, appendRootVM, removeRootVM, getAssociatedVM } from '../../framework/vm';
 import { getPropNameFromAttrName, isAttributeLocked } from '../../framework/attributes';
@@ -42,6 +44,7 @@ export function buildCustomElementConstructor(
                 mode,
                 isRoot: true,
                 owner: null,
+                renderer,
             });
         }
         connectedCallback() {

@@ -12,6 +12,7 @@ import { createVM, appendRootVM, removeRootVM, getAssociatedVMIfPresent } from '
 import { setElementProto } from '../../framework/def';
 
 import { nodeConnected, nodeDisconnected } from '../node-reactions';
+import { renderer } from '../renderer';
 
 /**
  * EXPERIMENTAL: This function is almost identical to document.createElement with the slightly
@@ -25,7 +26,7 @@ import { nodeConnected, nodeDisconnected } from '../node-reactions';
  * ```
  */
 export function createElement(
-    sel: string,
+    tagName: string,
     options: {
         is: typeof LightningElement;
         mode?: 'open' | 'closed';
@@ -46,7 +47,7 @@ export function createElement(
         );
     }
 
-    const element = document.createElement(sel);
+    const element = renderer.createElement(tagName);
 
     // There is a possibility that a custom element is registered under tagName, in which case, the
     // initialization is already carry on, and there is nothing else to do here.
@@ -61,6 +62,7 @@ export function createElement(
         mode: options.mode !== 'closed' ? 'open' : 'closed',
         isRoot: true,
         owner: null,
+        renderer,
     });
 
     nodeConnected(element, () => appendRootVM(vm));
