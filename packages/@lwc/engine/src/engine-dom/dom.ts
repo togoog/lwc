@@ -7,7 +7,15 @@
 import { hasOwnProperty } from '@lwc/shared';
 
 const { appendChild, insertBefore, replaceChild, removeChild } = Node.prototype;
+const HTMLElementPrototype = HTMLElement.prototype;
 
 const useSyntheticShadow = hasOwnProperty.call(Element.prototype, '$shadowToken$');
 
-export { appendChild, insertBefore, replaceChild, removeChild, useSyntheticShadow };
+export {
+    appendChild,
+    insertBefore,
+    replaceChild,
+    removeChild,
+    HTMLElementPrototype,
+    useSyntheticShadow,
+};

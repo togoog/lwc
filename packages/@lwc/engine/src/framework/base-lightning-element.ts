@@ -244,12 +244,7 @@ function BaseLightningElementConstructor(this: LightningElement) {
     if (isNull(vmBeingConstructed)) {
         throw new ReferenceError('Illegal constructor');
     }
-    if (process.env.NODE_ENV !== 'production') {
-        assert.invariant(
-            vmBeingConstructed.elm instanceof HTMLElement,
-            `Component creation requires a DOM element to be associated to ${vmBeingConstructed}.`
-        );
-    }
+
     const vm = vmBeingConstructed;
     const {
         elm,

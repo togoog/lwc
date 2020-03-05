@@ -18,7 +18,8 @@ export const HTMLElementOriginalDescriptors: PropertyDescriptorMap = create(null
 forEach.call(ElementPrototypeAriaPropertyNames, (propName: string) => {
     // Note: intentionally using our in-house getPropertyDescriptor instead of getOwnPropertyDescriptor here because
     // in IE11, some properties are on Element.prototype instead of HTMLElement, just to be sure.
-    const descriptor = getPropertyDescriptor(HTMLElement.prototype, propName);
+    // TODO: Fix this
+    const descriptor = getPropertyDescriptor({}, propName);
     if (!isUndefined(descriptor)) {
         HTMLElementOriginalDescriptors[propName] = descriptor;
     }
@@ -27,7 +28,8 @@ forEach.call(defaultDefHTMLPropertyNames, propName => {
     // Note: intentionally using our in-house getPropertyDescriptor instead of getOwnPropertyDescriptor here because
     // in IE11, id property is on Element.prototype instead of HTMLElement, and we suspect that more will fall into
     // this category, so, better to be sure.
-    const descriptor = getPropertyDescriptor(HTMLElement.prototype, propName);
+    // TODO: Fix this
+    const descriptor = getPropertyDescriptor({}, propName);
     if (!isUndefined(descriptor)) {
         HTMLElementOriginalDescriptors[propName] = descriptor;
     }

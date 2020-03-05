@@ -10,7 +10,6 @@ import { VNode } from '../3rdparty/snabbdom/types';
 import * as api from './api';
 import { EmptyArray } from './utils';
 import { VM } from './vm';
-import { removeAttribute, setAttribute } from '../env/element';
 /**
  * Function producing style based on a host and a shadow selector. This function is invoked by
  * the engine with different values depending on the mode that the component is running on.
@@ -43,7 +42,6 @@ function getCachedStyleElement(styleContent: string): HTMLStyleElement {
     return fragment.cloneNode(true).firstChild as HTMLStyleElement;
 }
 
-const globalStyleParent = document.head || document.body || document;
 const InsertedGlobalStyleContent: Record<string, true> = create(null);
 
 function insertGlobalStyle(styleContent: string) {
@@ -51,6 +49,9 @@ function insertGlobalStyle(styleContent: string) {
     if (isUndefined(InsertedGlobalStyleContent[styleContent])) {
         InsertedGlobalStyleContent[styleContent] = true;
         const elm = createStyleElement(styleContent);
+
+        // TODO: Move this to the engine-dom.
+        const globalStyleParent = document.head || document.body || document;
         globalStyleParent.appendChild(elm);
     }
 }
@@ -73,12 +74,12 @@ function createStyleVNode(elm: HTMLStyleElement) {
  * Reset the styling token applied to the host element.
  */
 export function resetStyleAttributes(vm: VM): void {
-    const { context, elm } = vm;
+    const { context, elm, renderer: {removeAttribute } } = vm;
 
     // Remove the style attribute currently applied to the host element.
     const oldHostAttribute = context.hostAttribute;
     if (!isUndefined(oldHostAttribute)) {
-        removeAttribute.call(elm, oldHostAttribute);
+        removeAttribute(elm, oldHostAttribute);
     }
 
     // Reset the scoping attributes associated to the context.
@@ -89,9 +90,10 @@ export function resetStyleAttributes(vm: VM): void {
  * Apply/Update the styling token applied to the host element.
  */
 export function applyStyleAttributes(vm: VM, hostAttribute: string, shadowAttribute: string): void {
-    const { context, elm } = vm;
+    const { context, elm, renderer: { setAttribute } } = vm;
+
     // Remove the style attribute currently applied to the host element.
-    setAttribute.call(elm, hostAttribute, '');
+    setAttribute(elm, hostAttribute, '');
 
     context.hostAttribute = hostAttribute;
     context.shadowAttribute = shadowAttribute;

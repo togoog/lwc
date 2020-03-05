@@ -46,8 +46,10 @@ export interface HostElement {
 export type HostNode = HostText;
 export type HostChildNode = HostElement | HostText;
 
-function unsupportedMethod(name: string): never {
-    throw new TypeError(`"${name}" is not supported in this environment`);
+function unsupportedMethod(name: string): () => never {
+    return function() {
+        throw new TypeError(`"${name}" is not supported in this environment`);
+    }
 }
 
 export const renderer: Renderer<HostNode, HostElement> = {

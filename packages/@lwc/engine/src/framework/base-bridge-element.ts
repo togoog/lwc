@@ -127,7 +127,8 @@ export function HTMLBridgeElementFactory(
 }
 
 export const BaseBridgeElement = HTMLBridgeElementFactory(
-    HTMLElement,
+    // TODO: Fix this
+    function() {} as any,
     getOwnPropertyNames(HTMLElementOriginalDescriptors),
     []
 );

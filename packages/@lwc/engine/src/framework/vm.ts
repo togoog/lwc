@@ -238,19 +238,13 @@ export function createVM<HostNode = any, HostElement = any>(
         renderer: Renderer<HostNode, HostElement>;
     }
 ): VM {
-    if (process.env.NODE_ENV !== 'production') {
-        assert.invariant(
-            elm instanceof HTMLElement,
-            `VM creation requires a DOM element instead of ${elm}.`
-        );
-    }
     const def = getComponentDef(Ctor);
     const { isRoot, mode, owner, renderer } = options;
-    idx += 1;
+
     const uninitializedVm: UninitializedVM<HostNode, HostElement> = {
         // component creation index is defined once, and never reset, it can
         // be preserved from one insertion to another without any issue
-        idx,
+        idx: idx += 1,
         state: VMState.created,
         isScheduled: false,
         isDirty: true,
@@ -332,12 +326,6 @@ export function getAssociatedVMIfPresent(obj: VMAssociable): VM | undefined {
 }
 
 function rehydrate(vm: VM) {
-    if (process.env.NODE_ENV !== 'production') {
-        assert.isTrue(
-            vm.elm instanceof HTMLElement,
-            `rehydration can only happen after ${vm} was patched the first time.`
-        );
-    }
     if (isTrue(vm.isDirty)) {
         const children = renderComponent(vm);
         patchShadowRoot(vm, children);
