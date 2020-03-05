@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-import { ArrayPush, create, hasOwnProperty, isFunction, seal } from '@lwc/shared';
+import { ArrayPush, create, isFunction, seal } from '@lwc/shared';
 
 type Callback = () => void;
 
@@ -42,5 +42,3 @@ export function addCallbackToNextTick(callback: Callback) {
     }
     ArrayPush.call(nextTickCallbackQueue, callback);
 }
-
-export const useSyntheticShadow = hasOwnProperty.call(Element.prototype, '$shadowToken$');

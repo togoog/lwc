@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
+import { hasOwnProperty } from '@lwc/shared';
+
 const { appendChild, insertBefore, replaceChild, removeChild } = Node.prototype;
 
-export { appendChild, insertBefore, replaceChild, removeChild };
+const useSyntheticShadow = hasOwnProperty.call(Element.prototype, '$shadowToken$');
+
+export { appendChild, insertBefore, replaceChild, removeChild, useSyntheticShadow };

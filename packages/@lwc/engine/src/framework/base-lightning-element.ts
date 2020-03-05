@@ -255,6 +255,7 @@ function BaseLightningElementConstructor(this: LightningElement) {
         elm,
         mode,
         def: { ctor },
+        renderer: { attachShadow },
     } = vm;
     const component = this;
     vm.component = component;
@@ -270,12 +271,11 @@ function BaseLightningElementConstructor(this: LightningElement) {
         vm.getHook = getHook;
     }
     // attaching the shadowRoot
-    const shadowRootOptions = {
+    const cmpRoot = attachShadow(elm, {
         mode,
         delegatesFocus: !!ctor.delegatesFocus,
         '$$lwc-synthetic-mode$$': true,
-    };
-    const cmpRoot = elm.attachShadow(shadowRootOptions);
+    });
     // linking elm, shadow root and component with the VM
     associateVM(component, vm as VM);
     associateVM(cmpRoot, vm as VM);

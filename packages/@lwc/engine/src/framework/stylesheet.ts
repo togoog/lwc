@@ -8,7 +8,7 @@ import { assert, create, emptyString, forEach, isArray, isUndefined } from '@lwc
 import { VNode } from '../3rdparty/snabbdom/types';
 
 import * as api from './api';
-import { EmptyArray, useSyntheticShadow } from './utils';
+import { EmptyArray } from './utils';
 import { VM } from './vm';
 import { removeAttribute, setAttribute } from '../env/element';
 /**
@@ -108,6 +108,7 @@ function collectStylesheets(stylesheets, hostSelector, shadowSelector, isNative,
 }
 
 export function evaluateCSS(
+    vm: VM,
     stylesheets: StylesheetFactory[],
     hostAttribute: string,
     shadowAttribute: string
@@ -116,7 +117,7 @@ export function evaluateCSS(
         assert.isTrue(isArray(stylesheets), `Invalid stylesheets.`);
     }
 
-    if (useSyntheticShadow) {
+    if (vm.renderer.useSyntheticShadow) {
         const hostSelector = `[${hostAttribute}]`;
         const shadowSelector = `[${shadowAttribute}]`;
 

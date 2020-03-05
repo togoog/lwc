@@ -29,10 +29,9 @@ import {
     ComponentConstructor,
     markComponentAsDirty,
 } from './component';
-import { addCallbackToNextTick, EmptyObject, EmptyArray, useSyntheticShadow } from './utils';
+import { addCallbackToNextTick, EmptyObject, EmptyArray } from './utils';
 import { invokeServiceHook, Services } from './services';
 import { invokeComponentCallback, invokeComponentRenderedCallback } from './invoker';
-import { ShadowRootInnerHTMLSetter } from '../env/dom';
 
 import { VNodeData, VNodes, VCustomElement, VNode } from '../3rdparty/snabbdom/types';
 import { Template } from './template';
@@ -55,10 +54,15 @@ import { getErrorComponentStack } from '../shared/format';
 
 // TODO: Replace the any with some actual type. This is silenting some of the type issues we have.
 export interface Renderer<HostNode = any, HostElement = any> {
+    useSyntheticShadow: boolean;
     insert(node: HostNode, parent: HostElement, anchor: HostNode | null): void;
     remove(node: HostNode, parent: HostElement): void;
     createElement(tagName: string, namespace?: string): HostElement;
     createText(content: string): HostNode;
+    attachShadow(
+        element: HostElement,
+        options: { mode: 'open' | 'closed'; delegatesFocus?: boolean; [key: string]: any }
+    ): HostNode;
     setText(node: HostNode, content: string): void;
     getAttribute(element: HostElement, name: string, namespace?: string): string | null;
     setAttribute(element: HostElement, name: string, value: string, namespace?: string): void;
@@ -260,7 +264,7 @@ export function createVM<HostNode = any, HostElement = any>(
         context: create(null),
         cmpProps: create(null),
         cmpTrack: create(null),
-        cmpSlots: useSyntheticShadow ? create(null) : undefined,
+        cmpSlots: renderer.useSyntheticShadow ? create(null) : undefined,
         callHook,
         setHook,
         getHook,
@@ -531,8 +535,21 @@ function recursivelyDisconnectChildren(vnodes: VNodes) {
 // of an error, in which case the children VNodes might not be representing the current
 // state of the DOM
 export function resetShadowRoot(vm: VM) {
+    const {
+        children,
+        cmpRoot,
+        renderer: { remove },
+    } = vm;
+
+    for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        if (!isNull(child)) {
+            remove(child.elm, cmpRoot);
+        }
+    }
+
     vm.children = EmptyArray;
-    ShadowRootInnerHTMLSetter.call(vm.cmpRoot, '');
+
     // disconnecting any known custom element inside the shadow of the this vm
     runShadowChildNodesDisconnectedCallback(vm);
 }

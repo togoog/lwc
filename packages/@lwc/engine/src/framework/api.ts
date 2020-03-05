@@ -25,7 +25,7 @@ import {
 import { logError } from '../shared/logger';
 import { invokeEventListener, invokeComponentCallback } from './invoker';
 import { getVMBeingRendered } from './template';
-import { EmptyArray, EmptyObject, useSyntheticShadow } from './utils';
+import { EmptyArray, EmptyObject } from './utils';
 import { getAssociatedVM, runConnectedCallback, SlotSet, VM, VMState } from './vm';
 import { ComponentConstructor } from './component';
 import {
@@ -329,10 +329,13 @@ export function s(
         children = slotset[slotName];
     }
     const vnode = h('slot', data, children);
-    if (useSyntheticShadow) {
-        // TODO [#1276]: compiler should give us some sort of indicator when a vnodes collection is dynamic
+
+    // TODO [#1276]: compiler should give us some sort of indicator when a vnodes collection is dynamic
+    const vmBeingRendered = getVMBeingRendered();
+    if (vmBeingRendered!.renderer.useSyntheticShadow) {
         sc(children);
     }
+
     return vnode;
 }
 

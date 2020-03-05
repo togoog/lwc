@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
 import { assert, isArray, isNull, isTrue, isUndefined } from '@lwc/shared';
-import { EmptyArray, useSyntheticShadow } from './utils';
+import { EmptyArray } from './utils';
 import {
     rerenderVM,
     createVM,
@@ -98,13 +98,17 @@ enum LWCDOMMode {
 }
 
 export function fallbackElmHook(vnode: VElement) {
-    const { owner } = vnode;
+    const {
+        context: { shadowAttribute },
+        renderer: { useSyntheticShadow },
+    } = vnode.owner;
     const elm = vnode.elm!;
+
     if (isTrue(useSyntheticShadow)) {
         const {
             data: { context },
         } = vnode;
-        const { shadowAttribute } = owner.context;
+
         if (
             !isUndefined(context) &&
             !isUndefined(context.lwc) &&
@@ -117,6 +121,7 @@ export function fallbackElmHook(vnode: VElement) {
         // into each element from the template, so they can be styled accordingly.
         setElementShadowToken(elm, shadowAttribute);
     }
+
     if (process.env.NODE_ENV !== 'production') {
         const {
             data: { context },
@@ -162,7 +167,7 @@ export function allocateChildrenHook(vnode: VCustomElement) {
     const vm = getAssociatedVM(vnode.elm!);
     const { children } = vnode;
     vm.aChildren = children;
-    if (isTrue(useSyntheticShadow)) {
+    if (isTrue(vm.renderer.useSyntheticShadow)) {
         // slow path
         allocateInSlot(vm, children);
         // every child vnode is now allocated, and the host should receive none directly, it receives them via the shadow!
@@ -181,7 +186,7 @@ export function createViewModelHook(vnode: VCustomElement) {
     const { mode, ctor, owner } = vnode;
     const def = getComponentDef(ctor);
     setElementProto(elm, def);
-    if (isTrue(useSyntheticShadow)) {
+    if (isTrue(owner.renderer.useSyntheticShadow)) {
         const { shadowAttribute } = owner.context;
         // when running in synthetic shadow mode, we need to set the shadowToken value
         // into each element from the template, so they can be styled accordingly.

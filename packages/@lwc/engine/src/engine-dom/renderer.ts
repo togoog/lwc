@@ -8,9 +8,12 @@ import { isUndefined } from '@lwc/shared';
 
 import { Renderer } from '../framework/vm';
 
+import { useSyntheticShadow } from './dom';
+
 const doc = document;
 
 export const renderer: Renderer<Node, Element> = {
+    useSyntheticShadow,
     insert(node, parent, anchor) {
         parent.insertBefore(node, anchor);
     },
@@ -24,6 +27,9 @@ export const renderer: Renderer<Node, Element> = {
     },
     createText(content) {
         return doc.createTextNode(content);
+    },
+    attachShadow(element, options) {
+        return element.attachShadow(options);
     },
     setText(node, content) {
         node.nodeValue = content;

@@ -12,6 +12,7 @@ import { Renderer } from '../framework/vm';
 export enum HostNodeType {
     Text = 'text',
     Element = 'element',
+    ShadowRoot = 'shadow-root',
 }
 
 export interface HostText {
@@ -26,10 +27,16 @@ export interface HostAttribute {
     value: string;
 }
 
+export interface HostShadowRoot {
+    type: HostNodeType.ShadowRoot;
+    children: HostChildNode[];
+}
+
 export interface HostElement {
     type: HostNodeType.Element;
     name: string;
     parent: HostElement | null;
+    shadowRoot: HostShadowRoot | null;
     namespace?: string;
     children: HostChildNode[];
     attributes: HostAttribute[];
@@ -44,6 +51,7 @@ function unsupportedMethod(name: string): never {
 }
 
 export const renderer: Renderer<HostNode, HostElement> = {
+    useSyntheticShadow: false,
     insert(node, parent, anchor) {
         if (node.parent !== null && node.parent !== parent) {
             const nodeIndex = node.parent.children.indexOf(node);
@@ -69,6 +77,7 @@ export const renderer: Renderer<HostNode, HostElement> = {
             name,
             namespace,
             parent: null,
+            shadowRoot: null,
             children: [],
             attributes: [],
             eventListeners: {},
@@ -80,6 +89,15 @@ export const renderer: Renderer<HostNode, HostElement> = {
             value: content,
             parent: null,
         };
+    },
+    attachShadow(element) {
+        element.shadowRoot = {
+            type: HostNodeType.ShadowRoot,
+            children: [],
+        };
+
+        // TODO: Fix the typings here.
+        return (element.shadowRoot as unknown) as HostNode;
     },
     setText(node, content) {
         node.value = content;

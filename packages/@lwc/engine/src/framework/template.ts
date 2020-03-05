@@ -184,6 +184,7 @@ export function evaluateTemplate(vm: VM, html: Template): Array<VNode | null> {
                         applyStyleAttributes(vm, hostAttribute, shadowAttribute);
                         // Caching style vnode so it can be reused on every render
                         context.styleVNode = evaluateCSS(
+                            vm,
                             stylesheets,
                             hostAttribute,
                             shadowAttribute
