@@ -45,8 +45,7 @@ import { ReactiveObserver } from './mutation-tracker';
 import { LightningElement } from './base-lightning-element';
 import { getErrorComponentStack } from '../shared/format';
 import { connectWireAdapters, disconnectWireAdapters, installWireAdapters } from './wiring';
-
-import { useSyntheticShadow } from '../../dom/src/env/dom';
+import { Renderer, HostNode, HostElement } from './renderer';
 
 export interface SlotSet {
     [key: string]: VNodes;
@@ -58,17 +57,21 @@ export enum VMState {
     disconnected,
 }
 
-export interface UninitializedVM {
+// TODO [#0]: How to get rid of the any as default generic value without passing them around through
+// the engine.
+export interface UninitializedVM<Node = HostNode, Element = HostElement> {
     /** Custom element tag name */
     readonly tagName: string;
     /** Component Element Back-pointer */
-    readonly elm: HTMLElement;
+    readonly elm: Element;
     /** Component Definition */
     readonly def: ComponentDef;
     /** Component Context Object */
     readonly context: Context;
     /** Back-pointer to the owner VM or null for root elements */
-    readonly owner: VM | null;
+    readonly owner: VM<Node, Element> | null;
+    /** Rendering operations associated with the VM */
+    readonly renderer: Renderer<Node, Element>;
     /** Component Creation Index */
     idx: number;
     /** Component state, analogous to Element.isConnected */
@@ -103,7 +106,7 @@ export interface UninitializedVM {
     oar?: Record<PropertyKey, ReactiveObserver>;
 }
 
-export interface VM extends UninitializedVM {
+export interface VM<Node = HostNode, Element = HostElement> extends UninitializedVM<Node, Element> {
     cmpTemplate: Template;
     component: ComponentInterface;
     cmpRoot: ShadowRoot;
@@ -140,7 +143,7 @@ export function rerenderVM(vm: VM) {
     rehydrate(vm);
 }
 
-export function connectRootElement(elm: HTMLElement) {
+export function connectRootElement(elm: any) {
     const vm = getAssociatedVM(elm);
 
     startGlobalMeasure(GlobalMeasurementPhase.HYDRATE, vm);
@@ -157,7 +160,7 @@ export function connectRootElement(elm: HTMLElement) {
     endGlobalMeasure(GlobalMeasurementPhase.HYDRATE, vm);
 }
 
-export function disconnectRootElement(elm: HTMLElement) {
+export function disconnectRootElement(elm: any) {
     const vm = getAssociatedVM(elm);
     resetComponentStateWhenRemoved(vm);
 }
@@ -197,23 +200,18 @@ export function removeVM(vm: VM) {
     resetComponentStateWhenRemoved(vm);
 }
 
-export function createVM(
-    elm: HTMLElement,
+export function createVM<HostNode, HostElement>(
+    elm: HostElement,
     def: ComponentDef,
     options: {
         mode: 'open' | 'closed';
-        owner: VM | null;
+        owner: VM<HostNode, HostElement> | null;
         isRoot: boolean;
         tagName: string;
+        renderer: Renderer;
     }
-): VM {
-    if (process.env.NODE_ENV !== 'production') {
-        assert.invariant(
-            elm instanceof HTMLElement,
-            `VM creation requires a DOM element instead of ${elm}.`
-        );
-    }
-    const { isRoot, mode, owner, tagName } = options;
+): VM<HostNode, HostElement> {
+    const { isRoot, mode, owner, tagName, renderer } = options;
     idx += 1;
     const uninitializedVm: UninitializedVM = {
         // component creation index is defined once, and never reset, it can
@@ -228,11 +226,12 @@ export function createVM(
         owner,
         tagName,
         elm,
+        renderer,
         data: EmptyObject,
         context: create(null),
         cmpProps: create(null),
         cmpFields: create(null),
-        cmpSlots: useSyntheticShadow ? create(null) : undefined,
+        cmpSlots: renderer.syntheticShadow ? create(null) : undefined,
         callHook,
         setHook,
         getHook,
@@ -257,7 +256,7 @@ export function createVM(
     createComponent(uninitializedVm, def.ctor);
 
     // link component to the wire service
-    const initializedVm = uninitializedVm as VM;
+    const initializedVm = uninitializedVm as VM<HostNode, HostElement>;
     // initializing the wire decorator per instance only when really needed
     if (hasWireAdapters(initializedVm)) {
         installWireAdapters(initializedVm);
@@ -299,12 +298,6 @@ export function getAssociatedVMIfPresent(obj: VMAssociable): VM | undefined {
 }
 
 function rehydrate(vm: VM) {
-    if (process.env.NODE_ENV !== 'production') {
-        assert.isTrue(
-            vm.elm instanceof HTMLElement,
-            `rehydration can only happen after ${vm} was patched the first time.`
-        );
-    }
     if (isTrue(vm.isDirty)) {
         const children = renderComponent(vm);
         patchShadowRoot(vm, children);
@@ -313,7 +306,10 @@ function rehydrate(vm: VM) {
 
 function patchShadowRoot(vm: VM, newCh: VNodes) {
     const { cmpRoot, children: oldCh } = vm;
-    vm.children = newCh; // caching the new children collection
+
+    // caching the new children collection
+    vm.children = newCh;
+
     if (newCh.length > 0 || oldCh.length > 0) {
         // patch function mutates vnodes by adding the element reference,
         // however, if patching fails it contains partial changes.
@@ -519,15 +515,15 @@ function recursivelyDisconnectChildren(vnodes: VNodes) {
 
 // This is a super optimized mechanism to remove the content of the shadowRoot without having to go
 // into snabbdom. Especially useful when the reset is a consequence of an error, in which case the
-// children VNodes might not be representing the current state of the DOM
+// children VNodes might not be representing the current state of the DOM.
 export function resetShadowRoot(vm: VM) {
-    const { children, cmpRoot } = vm;
+    const { children, cmpRoot, renderer } = vm;
 
     for (let i = 0, len = children.length; i < len; i++) {
         const child = children[i];
 
         if (!isNull(child) && !isUndefined(child.elm)) {
-            cmpRoot.removeChild(child.elm);
+            renderer.remove(child.elm, cmpRoot);
         }
     }
     vm.children = EmptyArray;
