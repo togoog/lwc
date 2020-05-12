@@ -51,6 +51,53 @@ export interface SlotSet {
     [key: string]: VNodes;
 }
 
+// TODO [#0]: How to get rid of the any as default generic value without passing them around through
+// the engine.
+export interface Renderer<HostNode = any, HostElement = any> {
+    ssr: boolean;
+    syntheticShadow: boolean;
+    insert(node: HostNode, parent: HostElement, anchor: HostNode | null): void;
+    remove(node: HostNode, parent: HostElement): void;
+    createElement(tagName: string, namespace?: string): HostElement;
+    createText(content: string): HostNode;
+    innerHTML(element: HostElement, text: string): void;
+    attachShadow(
+        element: HostElement,
+        options: { mode: 'open' | 'closed'; delegatesFocus?: boolean; [key: string]: any }
+    ): HostNode;
+    setText(node: HostNode, content: string): void;
+    getAttribute(element: HostElement, name: string, namespace?: string | null): string | null;
+    setAttribute(
+        element: HostElement,
+        name: string,
+        value: string,
+        namespace?: string | null
+    ): void;
+    removeAttribute(element: HostElement, name: string, namespace?: string | null): void;
+    addEventListener(
+        target: HostElement,
+        type: string,
+        callback: (event: Event) => any,
+        options?: AddEventListenerOptions | boolean
+    ): void;
+    removeEventListener(
+        target: HostElement,
+        type: string,
+        callback: (event: Event) => any,
+        options?: AddEventListenerOptions | boolean
+    ): void;
+    dispatchEvent(target: HostNode, event: Event): boolean;
+    getClassList(element: HostElement): DOMTokenList;
+    getStyleDeclaration(element: HostElement): CSSStyleDeclaration;
+    getBoundingClientRect(element: HostElement): ClientRect;
+    querySelector(element: HostElement, selectors: string): HostElement | null;
+    querySelectorAll(element: HostElement, selectors: string): NodeList;
+    getElementsByTagName(element: HostElement, tagNameOrWildCard: string): HTMLCollection;
+    getElementsByClassName(element: HostElement, names: string): HTMLCollection;
+    isConnected(node: HostNode): boolean;
+    injectStylesheet(text: string): HostElement | undefined;
+}
+
 export enum VMState {
     created,
     connected,
