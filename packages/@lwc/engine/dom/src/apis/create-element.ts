@@ -28,6 +28,8 @@ import {
 import { LightningElement } from '../../src';
 import { getComponentInternalDef, setElementProto } from '../../../src/framework/def';
 
+import { renderer } from '../renderer';
+
 type NodeSlotCallback = (element: Node) => void;
 
 const ConnectingSlot = createHiddenField<NodeSlotCallback>('connecting', 'engine');
@@ -119,6 +121,7 @@ export function createElement(
         mode: options.mode !== 'closed' ? 'open' : 'closed',
         owner: null,
         isRoot: true,
+        renderer,
     });
 
     setHiddenField(element, ConnectingSlot, connectRootElement);
