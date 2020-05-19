@@ -8,8 +8,8 @@ import { assert, create, emptyString, forEach, isArray, isUndefined } from '@lwc
 import { VNode } from '../3rdparty/snabbdom/types';
 
 import * as api from './api';
-import { EmptyArray, useSyntheticShadow } from './utils';
-import { VM } from './vm';
+import { EmptyArray } from './utils';
+import { VM, Renderer } from './vm';
 import { removeAttribute, setAttribute } from '../../dom/src/env/element';
 /**
  * Function producing style based on a host and a shadow selector. This function is invoked by
@@ -116,13 +116,14 @@ function collectStylesheets(
 export function evaluateCSS(
     stylesheets: StylesheetFactory[],
     hostAttribute: string,
-    shadowAttribute: string
+    shadowAttribute: string,
+    renderer: Renderer
 ): VNode | null {
     if (process.env.NODE_ENV !== 'production') {
         assert.isTrue(isArray(stylesheets), `Invalid stylesheets.`);
     }
 
-    if (useSyntheticShadow) {
+    if (renderer.syntheticShadow) {
         const hostSelector = `[${hostAttribute}]`;
         const shadowSelector = `[${shadowAttribute}]`;
 

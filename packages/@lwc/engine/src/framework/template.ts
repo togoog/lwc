@@ -186,7 +186,8 @@ export function evaluateTemplate(vm: VM, html: Template): Array<VNode | null> {
                         context.styleVNode = evaluateCSS(
                             stylesheets,
                             hostAttribute,
-                            shadowAttribute
+                            shadowAttribute,
+                            vm.renderer
                         );
                     }
 

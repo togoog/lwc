@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
 import { assert, isArray, isNull, isTrue, isUndefined } from '@lwc/shared';
-import { EmptyArray, useSyntheticShadow } from './utils';
+import { EmptyArray } from './utils';
 import {
     rerenderVM,
     createVM,
@@ -94,7 +94,7 @@ enum LWCDOMMode {
 export function fallbackElmHook(vnode: VElement) {
     const { owner } = vnode;
     const elm = vnode.elm!;
-    if (isTrue(useSyntheticShadow)) {
+    if (isTrue(owner.renderer.syntheticShadow)) {
         const {
             data: { context },
         } = vnode;
@@ -167,7 +167,7 @@ export function allocateChildrenHook(vnode: VCustomElement) {
     const children = vnode.aChildren || vnode.children;
 
     vm.aChildren = children;
-    if (isTrue(useSyntheticShadow)) {
+    if (isTrue(vm.renderer.syntheticShadow)) {
         // slow path
         allocateInSlot(vm, children);
         // save the allocated children in case this vnode is reused.
@@ -188,7 +188,7 @@ export function createViewModelHook(vnode: VCustomElement) {
     const { mode, ctor, owner } = vnode;
     const def = getComponentInternalDef(ctor);
     setElementProto(elm, def);
-    if (isTrue(useSyntheticShadow)) {
+    if (isTrue(owner.renderer.syntheticShadow)) {
         const { shadowAttribute } = owner.context;
         // when running in synthetic shadow mode, we need to set the shadowToken value
         // into each element from the template, so they can be styled accordingly.
@@ -198,6 +198,7 @@ export function createViewModelHook(vnode: VCustomElement) {
         mode,
         owner,
         isRoot: false,
+        renderer: owner.renderer,
     });
     if (process.env.NODE_ENV !== 'production') {
         assert.isTrue(

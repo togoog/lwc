@@ -23,10 +23,9 @@ import {
     getOwnPropertyNames,
 } from '@lwc/shared';
 import { createComponent, renderComponent, markComponentAsDirty } from './component';
-import { addCallbackToNextTick, EmptyObject, EmptyArray, useSyntheticShadow } from './utils';
+import { addCallbackToNextTick, EmptyObject, EmptyArray } from './utils';
 import { invokeServiceHook, Services } from './services';
 import { invokeComponentCallback, invokeComponentRenderedCallback } from './invoker';
-import { ShadowRootInnerHTMLSetter } from '../../dom/src/env/dom';
 
 import { VNodeData, VNodes, VCustomElement, VNode } from '../3rdparty/snabbdom/types';
 import { Template } from './template';
@@ -104,15 +103,19 @@ export enum VMState {
     disconnected,
 }
 
-export interface UninitializedVM {
+// TODO [#0]: How to get rid of the any as default generic value without passing them around through
+// the engine.
+export interface UninitializedVM<HostNode = any, HostElement = any> {
     /** Component Element Back-pointer */
-    readonly elm: HTMLElement;
+    readonly elm: HostElement;
     /** Component Definition */
     readonly def: ComponentDef;
     /** Component Context Object */
     readonly context: Context;
     /** Back-pointer to the owner VM or null for root elements */
-    readonly owner: VM | null;
+    readonly owner: VM<HostNode, HostElement> | null;
+    /** Rendering operations associated with the VM */
+    readonly renderer: Renderer<HostNode, HostElement>;
     /** Component Creation Index */
     idx: number;
     /** Component state, analogous to Element.isConnected */
@@ -147,7 +150,8 @@ export interface UninitializedVM {
     oar?: Record<PropertyKey, ReactiveObserver>;
 }
 
-export interface VM extends UninitializedVM {
+export interface VM<HostNode = any, HostElement = any>
+    extends UninitializedVM<HostNode, HostElement> {
     cmpTemplate: Template;
     component: ComponentInterface;
     cmpRoot: ShadowRoot;
@@ -184,7 +188,7 @@ export function rerenderVM(vm: VM) {
     rehydrate(vm);
 }
 
-export function connectRootElement(elm: HTMLElement) {
+export function connectRootElement(elm: any) {
     const vm = getAssociatedVM(elm);
 
     startGlobalMeasure(GlobalMeasurementPhase.HYDRATE, vm);
@@ -201,7 +205,7 @@ export function connectRootElement(elm: HTMLElement) {
     endGlobalMeasure(GlobalMeasurementPhase.HYDRATE, vm);
 }
 
-export function disconnectedRootElement(elm: HTMLElement) {
+export function disconnectedRootElement(elm: any) {
     const vm = getAssociatedVM(elm);
     resetComponentStateWhenRemoved(vm);
 }
@@ -241,22 +245,17 @@ export function removeVM(vm: VM) {
     resetComponentStateWhenRemoved(vm);
 }
 
-export function createVM(
-    elm: HTMLElement,
+export function createVM<HostNode, HostElement>(
+    elm: HostElement,
     def: ComponentDef,
     options: {
         mode: 'open' | 'closed';
-        owner: VM | null;
+        owner: VM<HostNode, HostElement> | null;
         isRoot: boolean;
+        renderer: Renderer;
     }
-): VM {
-    if (process.env.NODE_ENV !== 'production') {
-        assert.invariant(
-            elm instanceof HTMLElement,
-            `VM creation requires a DOM element instead of ${elm}.`
-        );
-    }
-    const { isRoot, mode, owner } = options;
+): VM<HostNode, HostElement> {
+    const { isRoot, mode, owner, renderer } = options;
     idx += 1;
     const uninitializedVm: UninitializedVM = {
         // component creation index is defined once, and never reset, it can
@@ -270,11 +269,12 @@ export function createVM(
         def,
         owner,
         elm,
+        renderer,
         data: EmptyObject,
         context: create(null),
         cmpProps: create(null),
         cmpFields: create(null),
-        cmpSlots: useSyntheticShadow ? create(null) : undefined,
+        cmpSlots: renderer.syntheticShadow ? create(null) : undefined,
         callHook,
         setHook,
         getHook,
@@ -299,7 +299,7 @@ export function createVM(
     createComponent(uninitializedVm, def.ctor);
 
     // link component to the wire service
-    const initializedVm = uninitializedVm as VM;
+    const initializedVm = uninitializedVm as VM<HostNode, HostElement>;
     // initializing the wire decorator per instance only when really needed
     if (hasWireAdapters(initializedVm)) {
         installWireAdapters(initializedVm);
@@ -341,12 +341,6 @@ export function getAssociatedVMIfPresent(obj: VMAssociable): VM | undefined {
 }
 
 function rehydrate(vm: VM) {
-    if (process.env.NODE_ENV !== 'production') {
-        assert.isTrue(
-            vm.elm instanceof HTMLElement,
-            `rehydration can only happen after ${vm} was patched the first time.`
-        );
-    }
     if (isTrue(vm.isDirty)) {
         const children = renderComponent(vm);
         patchShadowRoot(vm, children);
@@ -354,8 +348,15 @@ function rehydrate(vm: VM) {
 }
 
 function patchShadowRoot(vm: VM, newCh: VNodes) {
-    const { cmpRoot, children: oldCh } = vm;
-    vm.children = newCh; // caching the new children collection
+    const {
+        cmpRoot,
+        children: oldCh,
+        renderer: { ssr },
+    } = vm;
+
+    // caching the new children collection
+    vm.children = newCh;
+
     if (newCh.length > 0 || oldCh.length > 0) {
         // patch function mutates vnodes by adding the element reference,
         // however, if patching fails it contains partial changes.
@@ -383,11 +384,10 @@ function patchShadowRoot(vm: VM, newCh: VNodes) {
             );
         }
     }
-    if (vm.state === VMState.connected) {
-        // If the element is connected, that means connectedCallback was already issued, and
-        // any successive rendering should finish with the call to renderedCallback, otherwise
-        // the connectedCallback will take care of calling it in the right order at the end of
-        // the current rehydration process.
+    // If the element is connected, that means connectedCallback was already issued, and any successive rendering should
+    // finish with the call to renderedCallback, otherwise the connectedCallback will take care of calling it in the
+    // right order at the end of the current rehydration process.
+    if (vm.state === VMState.connected && ssr === false) {
         runRenderedCallback(vm);
     }
 }
@@ -564,14 +564,16 @@ function recursivelyDisconnectChildren(vnodes: VNodes) {
 // of an error, in which case the children VNodes might not be representing the current
 // state of the DOM
 export function resetShadowRoot(vm: VM) {
+    const { renderer } = vm;
+
     vm.children = EmptyArray;
-    ShadowRootInnerHTMLSetter.call(vm.cmpRoot, '');
+    renderer.innerHTML(vm.cmpRoot, '');
     // disconnecting any known custom element inside the shadow of the this vm
     runShadowChildNodesDisconnectedCallback(vm);
 }
 
 export function scheduleRehydration(vm: VM) {
-    if (!vm.isScheduled) {
+    if (!vm.isScheduled && !vm.renderer.ssr) {
         vm.isScheduled = true;
         if (rehydrateQueue.length === 0) {
             addCallbackToNextTick(flushRehydrationQueue);
