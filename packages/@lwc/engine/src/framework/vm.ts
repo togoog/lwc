@@ -94,7 +94,6 @@ export interface Renderer<HostNode = any, HostElement = any> {
     getElementsByTagName(element: HostElement, tagNameOrWildCard: string): HTMLCollection;
     getElementsByClassName(element: HostElement, names: string): HTMLCollection;
     isConnected(node: HostNode): boolean;
-    injectStylesheet(text: string): HostElement | undefined;
 }
 
 export enum VMState {

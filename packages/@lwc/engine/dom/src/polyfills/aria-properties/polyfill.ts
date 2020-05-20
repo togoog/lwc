@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-import { setAttribute, removeAttribute, getAttribute, hasAttribute } from '../../env/element';
 
 // this regular expression is used to transform aria props into aria attributes because
 // that doesn't follow the regular transformation process. e.g.: `aria-labeledby` <=> `ariaLabelBy`
@@ -45,7 +44,7 @@ function createAriaPropertyPropertyDescriptor(
             }
 
             // otherwise just reflect what's in the attribute
-            return hasAttribute.call(this, attrName) ? getAttribute.call(this, attrName) : null;
+            return this.hasAttribute(attrName) ? this.getAttribute(attrName) : null;
         },
         set(this: HTMLElement, newValue: any) {
             const normalizedValue = getNormalizedAriaPropertyValue(newValue);
@@ -55,9 +54,9 @@ function createAriaPropertyPropertyDescriptor(
 
             // reflect into the corresponding attribute
             if (newValue === null) {
-                removeAttribute.call(this, attrName);
+                this.removeAttribute(attrName);
             } else {
-                setAttribute.call(this, attrName, newValue);
+                this.setAttribute(attrName, newValue);
             }
         },
         configurable: true,

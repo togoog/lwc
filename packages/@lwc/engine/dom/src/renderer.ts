@@ -7,45 +7,11 @@
 
 import { hasOwnProperty, isUndefined } from '@lwc/shared';
 
-import { Renderer } from '../../src/framework/vm';
+import { Renderer } from '../../src';
 
 // TODO [#0]: Evaluate how we can extract the `$shadowToken$` property name in a shared package
 // to avoid having to synchronize it between the different modules.
 export const syntheticShadow = hasOwnProperty.call(Element.prototype, '$shadowToken$');
-
-function createStyleElement(text: string): HTMLStyleElement {
-    const style = document.createElement('style');
-    style.type = 'text/css';
-    style.textContent = text;
-    return style;
-}
-
-const syntheticShadowStylesheet = new Set<string>();
-const syntheticShadowStylesheetContainer = document.head || document.body || document;
-
-function syntheticShadowInjectStylesheet(text: string): undefined {
-    if (syntheticShadowStylesheet.has(text)) {
-        return;
-    }
-
-    syntheticShadowStylesheet.add(text);
-
-    const style = createStyleElement(text);
-    syntheticShadowStylesheetContainer.appendChild(style);
-}
-
-const nativeShadowStyleCache = new Map<string, HTMLStyleElement>();
-
-function nativeShadowInjectStyleSheet(text: string): HTMLStyleElement {
-    let cachedStyle = nativeShadowStyleCache.get(text);
-
-    if (isUndefined(cachedStyle)) {
-        cachedStyle = createStyleElement(text);
-        nativeShadowStyleCache.set(text, cachedStyle);
-    }
-
-    return cachedStyle.cloneNode() as HTMLStyleElement;
-}
 
 export const renderer: Renderer<Node, Element> = {
     ssr: false,
@@ -149,8 +115,4 @@ export const renderer: Renderer<Node, Element> = {
     isConnected(node) {
         return node.isConnected;
     },
-
-    injectStylesheet: syntheticShadow
-        ? syntheticShadowInjectStylesheet
-        : nativeShadowInjectStyleSheet,
 };
