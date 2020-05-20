@@ -53,7 +53,6 @@ export interface SlotSet {
 // TODO [#0]: How to get rid of the any as default generic value without passing them around through
 // the engine.
 export interface Renderer<HostNode = any, HostElement = any> {
-    ssr: boolean;
     syntheticShadow: boolean;
     insert(node: HostNode, parent: HostElement, anchor: HostNode | null): void;
     remove(node: HostNode, parent: HostElement): void;
@@ -347,11 +346,7 @@ function rehydrate(vm: VM) {
 }
 
 function patchShadowRoot(vm: VM, newCh: VNodes) {
-    const {
-        cmpRoot,
-        children: oldCh,
-        renderer: { ssr },
-    } = vm;
+    const { cmpRoot, children: oldCh } = vm;
 
     // caching the new children collection
     vm.children = newCh;
@@ -383,10 +378,11 @@ function patchShadowRoot(vm: VM, newCh: VNodes) {
             );
         }
     }
-    // If the element is connected, that means connectedCallback was already issued, and any successive rendering should
-    // finish with the call to renderedCallback, otherwise the connectedCallback will take care of calling it in the
-    // right order at the end of the current rehydration process.
-    if (vm.state === VMState.connected && ssr === false) {
+    if (vm.state === VMState.connected) {
+        // If the element is connected, that means connectedCallback was already issued, and any
+        // successive rendering should finish with the call to renderedCallback, otherwise the
+        // connectedCallback will take care of calling it in the right order at the end of the
+        // current rehydration process.
         runRenderedCallback(vm);
     }
 }
@@ -572,7 +568,7 @@ export function resetShadowRoot(vm: VM) {
 }
 
 export function scheduleRehydration(vm: VM) {
-    if (!vm.isScheduled && !vm.renderer.ssr) {
+    if (!vm.isScheduled) {
         vm.isScheduled = true;
         if (rehydrateQueue.length === 0) {
             addCallbackToNextTick(flushRehydrationQueue);
