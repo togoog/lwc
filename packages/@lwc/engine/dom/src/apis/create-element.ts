@@ -26,7 +26,7 @@ import {
     createVM,
     connectRootElement,
     disconnectedRootElement,
-} from '../../src';
+} from '../../../src';
 
 import { renderer } from '../renderer';
 
