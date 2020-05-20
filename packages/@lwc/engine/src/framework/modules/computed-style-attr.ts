@@ -6,7 +6,6 @@
  */
 import { isString } from '@lwc/shared';
 import { VNode } from '../../3rdparty/snabbdom/types';
-import { removeAttribute } from '../../../dom/src/env/element';
 
 // The style property is a string when defined via an expression in the template.
 function updateStyleAttribute(oldVnode: VNode, vnode: VNode) {
@@ -18,7 +17,7 @@ function updateStyleAttribute(oldVnode: VNode, vnode: VNode) {
     const elm = vnode.elm as HTMLElement;
     const { style } = elm;
     if (!isString(newStyle) || newStyle === '') {
-        removeAttribute.call(elm, 'style');
+        elm.removeAttribute('style');
     } else {
         style.cssText = newStyle;
     }

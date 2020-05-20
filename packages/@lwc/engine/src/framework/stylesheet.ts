@@ -10,7 +10,7 @@ import { VNode } from '../3rdparty/snabbdom/types';
 import * as api from './api';
 import { EmptyArray } from './utils';
 import { VM, Renderer } from './vm';
-import { removeAttribute, setAttribute } from '../../dom/src/env/element';
+
 /**
  * Function producing style based on a host and a shadow selector. This function is invoked by
  * the engine with different values depending on the mode that the component is running on.
@@ -78,7 +78,7 @@ export function resetStyleAttributes(vm: VM): void {
     // Remove the style attribute currently applied to the host element.
     const oldHostAttribute = context.hostAttribute;
     if (!isUndefined(oldHostAttribute)) {
-        removeAttribute.call(elm, oldHostAttribute);
+        elm.removeAttribute(oldHostAttribute);
     }
 
     // Reset the scoping attributes associated to the context.
@@ -91,7 +91,7 @@ export function resetStyleAttributes(vm: VM): void {
 export function applyStyleAttributes(vm: VM, hostAttribute: string, shadowAttribute: string): void {
     const { context, elm } = vm;
     // Remove the style attribute currently applied to the host element.
-    setAttribute.call(elm, hostAttribute, '');
+    elm.setAttribute(hostAttribute, '');
 
     context.hostAttribute = hostAttribute;
     context.shadowAttribute = shadowAttribute;
