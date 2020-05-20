@@ -14,7 +14,6 @@ import { Renderer } from '../../src';
 export const syntheticShadow = hasOwnProperty.call(Element.prototype, '$shadowToken$');
 
 export const renderer: Renderer<Node, Element> = {
-    ssr: false,
     syntheticShadow,
 
     createElement(tagName, namespace) {
