@@ -19,14 +19,14 @@ import {
 } from '@lwc/shared';
 
 import {
+    LightningElement,
+    getComponentInternalDef,
+    setElementProto,
     getAssociatedVMIfPresent,
     createVM,
     connectRootElement,
     disconnectedRootElement,
-} from '../../../src/framework/vm';
-
-import { LightningElement } from '../../src';
-import { getComponentInternalDef, setElementProto } from '../../../src/framework/def';
+} from '../../src';
 
 import { renderer } from '../renderer';
 
