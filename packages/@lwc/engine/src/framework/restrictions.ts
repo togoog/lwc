@@ -198,18 +198,17 @@ function getShadowRootRestrictionsDescriptors(sr: ShadowRoot): PropertyDescripto
     const originalQuerySelectorAll = sr.querySelectorAll;
     const originalAddEventListener = sr.addEventListener;
     const descriptors = getNodeRestrictionsDescriptors(sr);
-    // const originalInnerHTMLDescriptor = getPropertyDescriptor(sr, 'innerHTML')!;
+    const originalInnerHTMLDescriptor = getPropertyDescriptor(sr, 'innerHTML')!;
     const originalTextContentDescriptor = getPropertyDescriptor(sr, 'textContent')!;
     assign(descriptors, {
-        // WIP: Reenable this once we can get rid of the innerHTML reset in the engine.
-        // innerHTML: generateAccessorDescriptor({
-        //     get(this: ShadowRoot): string {
-        //         return originalInnerHTMLDescriptor.get!.call(this);
-        //     },
-        //     set(this: ShadowRoot, _value: string) {
-        //         throw new TypeError(`Invalid attempt to set innerHTML on ShadowRoot.`);
-        //     },
-        // }),
+        innerHTML: generateAccessorDescriptor({
+            get(this: ShadowRoot): string {
+                return originalInnerHTMLDescriptor.get!.call(this);
+            },
+            set(this: ShadowRoot, _value: string) {
+                throw new TypeError(`Invalid attempt to set innerHTML on ShadowRoot.`);
+            },
+        }),
         textContent: generateAccessorDescriptor({
             get(this: ShadowRoot): string {
                 return originalTextContentDescriptor.get!.call(this);

@@ -58,8 +58,8 @@ export interface Renderer<HostNode = any, HostElement = any> {
     remove(node: HostNode, parent: HostElement): void;
     createElement(tagName: string, namespace?: string): HostElement;
     createText(content: string): HostNode;
+    firstChild(node: HostNode): HostNode | null;
     nextSibling(node: HostNode): HostNode | null;
-    innerHTML(element: HostElement, text: string): void;
     attachShadow(
         element: HostElement,
         options: { mode: 'open' | 'closed'; delegatesFocus?: boolean; [key: string]: any }
@@ -555,15 +555,20 @@ function recursivelyDisconnectChildren(vnodes: VNodes) {
     }
 }
 
-// This is a super optimized mechanism to remove the content of the shadowRoot
-// without having to go into snabbdom. Especially useful when the reset is a consequence
-// of an error, in which case the children VNodes might not be representing the current
-// state of the DOM
+// This is a super optimized mechanism to remove the content of the shadowRoot without having to go
+// into snabbdom. Especially useful when the reset is a consequence of an error, in which case the
+// children VNodes might not be representing the current state of the DOM.
 export function resetShadowRoot(vm: VM) {
     const { renderer } = vm;
 
     vm.children = EmptyArray;
-    renderer.innerHTML(vm.cmpRoot, '');
+
+    let firstChild;
+    // eslint-disable-next-line no-cond-assign
+    while ((firstChild = renderer.firstChild(vm.cmpRoot))) {
+        renderer.remove(firstChild, vm.cmpRoot);
+    }
+
     // disconnecting any known custom element inside the shadow of the this vm
     runShadowChildNodesDisconnectedCallback(vm);
 }

@@ -13,13 +13,12 @@ describe('ShadowRoot.innerHTML', () => {
         );
     });
 
-    // WIP: Reenable this once we can rid of the innerHTML in the engine
-    // it('should throw an error when invoking setter on the shadowRoot', () => {
-    //     const elm = createElement('x-test', { is: Test });
-    //     document.body.appendChild(elm);
+    it('should throw an error when invoking setter on the shadowRoot', () => {
+        const elm = createElement('x-test', { is: Test });
+        document.body.appendChild(elm);
 
-    //     expect(() => {
-    //         elm.shadowRoot.innerHTML = '<span>Hello World!</span>';
-    //     }).toThrowError();
-    // });
+        expect(() => {
+            elm.shadowRoot.innerHTML = '<span>Hello World!</span>';
+        }).toThrowError();
+    });
 });

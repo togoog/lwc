@@ -34,14 +34,12 @@ export const renderer: Renderer<Node, Element> = {
         parent.removeChild(node);
     },
 
-    nextSibling(node) {
-        return node.nextSibling;
+    firstChild(node) {
+        return node.firstChild;
     },
 
-    innerHTML(element, text) {
-        // TODO [#0]: This is problematic because of the restrictions. Invoking directly innerHTML on the shadow root
-        // triggers the restrictions.
-        element.innerHTML = text;
+    nextSibling(node) {
+        return node.nextSibling;
     },
 
     attachShadow(element, options) {
