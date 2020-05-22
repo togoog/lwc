@@ -27,6 +27,7 @@ import { addCallbackToNextTick, EmptyObject, EmptyArray } from './utils';
 import { invokeServiceHook, Services } from './services';
 import { invokeComponentCallback, invokeComponentRenderedCallback } from './invoker';
 
+import { Renderer } from './renderer';
 import { VNodeData, VNodes, VCustomElement, VNode } from '../3rdparty/snabbdom/types';
 import { Template } from './template';
 import { ComponentDef } from './def';
@@ -50,52 +51,6 @@ export interface SlotSet {
     [key: string]: VNodes;
 }
 
-// TODO [#0]: How to get rid of the any as default generic value without passing them around through
-// the engine.
-export interface Renderer<HostNode = any, HostElement = any> {
-    syntheticShadow: boolean;
-    insert(node: HostNode, parent: HostElement, anchor: HostNode | null): void;
-    remove(node: HostNode, parent: HostElement): void;
-    createElement(tagName: string, namespace?: string): HostElement;
-    createText(content: string): HostNode;
-    firstChild(node: HostNode): HostNode | null;
-    nextSibling(node: HostNode): HostNode | null;
-    attachShadow(
-        element: HostElement,
-        options: { mode: 'open' | 'closed'; delegatesFocus?: boolean; [key: string]: any }
-    ): HostNode;
-    setText(node: HostNode, content: string): void;
-    getAttribute(element: HostElement, name: string, namespace?: string | null): string | null;
-    setAttribute(
-        element: HostElement,
-        name: string,
-        value: string,
-        namespace?: string | null
-    ): void;
-    removeAttribute(element: HostElement, name: string, namespace?: string | null): void;
-    addEventListener(
-        target: HostElement,
-        type: string,
-        callback: (event: Event) => any,
-        options?: AddEventListenerOptions | boolean
-    ): void;
-    removeEventListener(
-        target: HostElement,
-        type: string,
-        callback: (event: Event) => any,
-        options?: AddEventListenerOptions | boolean
-    ): void;
-    dispatchEvent(target: HostNode, event: Event): boolean;
-    getClassList(element: HostElement): DOMTokenList;
-    getStyleDeclaration(element: HostElement): CSSStyleDeclaration;
-    getBoundingClientRect(element: HostElement): ClientRect;
-    querySelector(element: HostElement, selectors: string): HostElement | null;
-    querySelectorAll(element: HostElement, selectors: string): NodeList;
-    getElementsByTagName(element: HostElement, tagNameOrWildCard: string): HTMLCollection;
-    getElementsByClassName(element: HostElement, names: string): HTMLCollection;
-    isConnected(node: HostNode): boolean;
-}
-
 export enum VMState {
     created,
     connected,
@@ -104,7 +59,7 @@ export enum VMState {
 
 // TODO [#0]: How to get rid of the any as default generic value without passing them around through
 // the engine.
-export interface UninitializedVM<HostNode = any, HostElement = any> {
+export interface UninitializedVM<HostNode = unknown, HostElement = unknown> {
     /** Component Element Back-pointer */
     readonly elm: HostElement;
     /** Component Definition */
@@ -149,7 +104,7 @@ export interface UninitializedVM<HostNode = any, HostElement = any> {
     oar?: Record<PropertyKey, ReactiveObserver>;
 }
 
-export interface VM<HostNode = any, HostElement = any>
+export interface VM<HostNode = unknown, HostElement = unknown>
     extends UninitializedVM<HostNode, HostElement> {
     cmpTemplate: Template;
     component: ComponentInterface;
