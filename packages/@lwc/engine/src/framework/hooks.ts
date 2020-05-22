@@ -39,15 +39,17 @@ function setElementShadowToken(elm: Element, token: string | undefined) {
 }
 
 export function updateNodeHook(oldVnode: VNode, vnode: VNode) {
-    const { text } = vnode;
+    const {
+        elm,
+        text,
+        owner: { renderer },
+    } = vnode;
+
     if (oldVnode.text !== text) {
         if (process.env.NODE_ENV !== 'production') {
             unlockDomMutation();
         }
-        /**
-         * Compiler will never produce a text property that is not string
-         */
-        vnode.elm!.nodeValue = text!;
+        renderer.setText(elm, text!);
         if (process.env.NODE_ENV !== 'production') {
             lockDomMutation();
         }
@@ -55,20 +57,24 @@ export function updateNodeHook(oldVnode: VNode, vnode: VNode) {
 }
 
 export function insertNodeHook(vnode: VNode, parentNode: Node, referenceNode: Node | null) {
+    const { renderer } = vnode.owner;
+
     if (process.env.NODE_ENV !== 'production') {
         unlockDomMutation();
     }
-    parentNode.insertBefore(vnode.elm!, referenceNode);
+    renderer.insert(vnode.elm!, parentNode, referenceNode);
     if (process.env.NODE_ENV !== 'production') {
         lockDomMutation();
     }
 }
 
 export function removeNodeHook(vnode: VNode, parentNode: Node) {
+    const { renderer } = vnode.owner;
+
     if (process.env.NODE_ENV !== 'production') {
         unlockDomMutation();
     }
-    parentNode.removeChild(vnode.elm!);
+    renderer.remove(vnode.elm!, parentNode);
     if (process.env.NODE_ENV !== 'production') {
         lockDomMutation();
     }

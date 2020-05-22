@@ -9,15 +9,20 @@ import { VNode } from '../../3rdparty/snabbdom/types';
 
 // The style property is a string when defined via an expression in the template.
 function updateStyleAttribute(oldVnode: VNode, vnode: VNode) {
-    const { style: newStyle } = vnode.data;
+    const {
+        elm,
+        data: { style: newStyle },
+        owner: { renderer },
+    } = vnode;
+    const { getStyleDeclaration, removeAttribute } = renderer;
     if (oldVnode.data.style === newStyle) {
         return;
     }
 
-    const elm = vnode.elm as HTMLElement;
-    const { style } = elm;
+    const style = getStyleDeclaration(elm);
+
     if (!isString(newStyle) || newStyle === '') {
-        elm.removeAttribute('style');
+        removeAttribute(elm, 'style');
     } else {
         style.cssText = newStyle;
     }
