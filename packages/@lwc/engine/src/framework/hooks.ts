@@ -27,14 +27,15 @@ import modStaticStyle from './modules/static-style-attr';
 import { updateDynamicChildren, updateStaticChildren } from '../3rdparty/snabbdom/snabbdom';
 import { patchElementWithRestrictions, unlockDomMutation, lockDomMutation } from './restrictions';
 import { getComponentInternalDef, setElementProto } from './def';
+import { HostElement, HostNode } from './renderer';
 
 const noop = () => void 0;
 
-function observeElementChildNodes(elm: Element) {
+function observeElementChildNodes(elm: HostElement) {
     (elm as any).$domManual$ = true;
 }
 
-function setElementShadowToken(elm: Element, token: string | undefined) {
+function setElementShadowToken(elm: HostElement, token: string | undefined) {
     (elm as any).$shadowToken$ = token;
 }
 
@@ -49,14 +50,14 @@ export function updateNodeHook(oldVnode: VNode, vnode: VNode) {
         if (process.env.NODE_ENV !== 'production') {
             unlockDomMutation();
         }
-        renderer.setText(elm, text!);
+        renderer.setText(elm!, text!);
         if (process.env.NODE_ENV !== 'production') {
             lockDomMutation();
         }
     }
 }
 
-export function insertNodeHook(vnode: VNode, parentNode: Node, referenceNode: Node | null) {
+export function insertNodeHook(vnode: VNode, parentNode: HostNode, referenceNode: HostNode | null) {
     const { renderer } = vnode.owner;
 
     if (process.env.NODE_ENV !== 'production') {
@@ -68,7 +69,7 @@ export function insertNodeHook(vnode: VNode, parentNode: Node, referenceNode: No
     }
 }
 
-export function removeNodeHook(vnode: VNode, parentNode: Node) {
+export function removeNodeHook(vnode: VNode, parentNode: HostNode) {
     const { renderer } = vnode.owner;
 
     if (process.env.NODE_ENV !== 'production') {

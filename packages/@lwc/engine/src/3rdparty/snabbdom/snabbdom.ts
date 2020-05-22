@@ -13,11 +13,10 @@ Code distributed by Snabbdom as part of the Snabbdom project at
 https://github.com/snabbdom/snabbdom/
 */
 
-import { VNode, VNodes, Key } from './types';
+import { isUndefined } from '@lwc/shared';
 
-function isUndef(s: any): s is undefined {
-    return s === undefined;
-}
+import { VNode, VNodes, Key } from './types';
+import { HostNode } from '../../framework/renderer';
 
 interface KeyToIndexMap {
     [key: string]: number;
@@ -48,8 +47,8 @@ function createKeyToOldIdx(children: VNodes, beginIdx: number, endIdx: number): 
 }
 
 function addVnodes(
-    parentElm: Node,
-    before: Node | null,
+    parentElm: HostNode,
+    before: HostNode | null,
     vnodes: VNodes,
     startIdx: number,
     endIdx: number
@@ -63,7 +62,7 @@ function addVnodes(
     }
 }
 
-function removeVnodes(parentElm: Node, vnodes: VNodes, startIdx: number, endIdx: number): void {
+function removeVnodes(parentElm: HostNode, vnodes: VNodes, startIdx: number, endIdx: number): void {
     for (; startIdx <= endIdx; ++startIdx) {
         const ch = vnodes[startIdx];
         // text nodes do not have logic associated to them
@@ -73,7 +72,7 @@ function removeVnodes(parentElm: Node, vnodes: VNodes, startIdx: number, endIdx:
     }
 }
 
-export function updateDynamicChildren(parentElm: Node, oldCh: VNodes, newCh: VNodes) {
+export function updateDynamicChildren(parentElm: HostNode, oldCh: VNodes, newCh: VNodes) {
     let oldStartIdx = 0;
     let newStartIdx = 0;
     let oldEndIdx = oldCh.length - 1;
@@ -124,7 +123,7 @@ export function updateDynamicChildren(parentElm: Node, oldCh: VNodes, newCh: VNo
                 oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
             }
             idxInOld = oldKeyToIdx[newStartVnode.key!];
-            if (isUndef(idxInOld)) {
+            if (isUndefined(idxInOld)) {
                 // New element
                 newStartVnode.hook.create(newStartVnode);
                 newStartVnode.hook.insert(newStartVnode, parentElm, oldStartVnode.elm!);
@@ -157,7 +156,7 @@ export function updateDynamicChildren(parentElm: Node, oldCh: VNodes, newCh: VNo
     }
 }
 
-export function updateStaticChildren(parentElm: Node, oldCh: VNodes, newCh: VNodes) {
+export function updateStaticChildren(parentElm: HostNode, oldCh: VNodes, newCh: VNodes) {
     const { length } = newCh;
     if (oldCh.length === 0) {
         // the old list is empty, we can directly insert anything new
@@ -166,7 +165,7 @@ export function updateStaticChildren(parentElm: Node, oldCh: VNodes, newCh: VNod
     }
     // if the old list is not empty, the new list MUST have the same
     // amount of nodes, that's why we call this static children
-    let referenceElm: Node | null = null;
+    let referenceElm: HostNode | null = null;
     for (let i = length - 1; i >= 0; i -= 1) {
         const vnode = newCh[i];
         const oldVNode = oldCh[i];

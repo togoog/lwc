@@ -21,7 +21,7 @@ function createStyleAttribute(vnode: VNode) {
         return;
     }
 
-    const style = renderer.getStyleDeclaration(elm);
+    const style = renderer.getStyleDeclaration(elm!);
     for (const name in styleMap) {
         (style as any)[name] = styleMap[name];
     }

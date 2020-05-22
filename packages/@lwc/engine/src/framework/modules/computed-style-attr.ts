@@ -19,10 +19,10 @@ function updateStyleAttribute(oldVnode: VNode, vnode: VNode) {
         return;
     }
 
-    const style = getStyleDeclaration(elm);
+    const style = getStyleDeclaration(elm!);
 
     if (!isString(newStyle) || newStyle === '') {
-        removeAttribute(elm, 'style');
+        removeAttribute(elm!, 'style');
     } else {
         style.cssText = newStyle;
     }

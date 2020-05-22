@@ -58,7 +58,7 @@ function createAllEventListeners(vnode: VNode) {
 
     let name;
     for (name in on) {
-        renderer.addEventListener(elm, name, listener);
+        renderer.addEventListener(elm!, name, listener);
     }
 }
 

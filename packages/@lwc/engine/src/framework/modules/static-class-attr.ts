@@ -21,7 +21,7 @@ function createClassAttribute(vnode: VNode) {
         return;
     }
 
-    const classList = renderer.getClassList(elm);
+    const classList = renderer.getClassList(elm!);
     for (const name in classMap) {
         classList.add(name);
     }

@@ -561,7 +561,7 @@ BaseLightningElementConstructor.prototype = {
 
     get template(): ShadowRoot {
         const vm = getAssociatedVM(this);
-        return vm.cmpRoot;
+        return vm.cmpRoot as ShadowRoot;
     },
 
     get shadowRoot(): null {

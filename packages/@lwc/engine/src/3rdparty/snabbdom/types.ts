@@ -14,6 +14,7 @@
  */
 
 import { VM } from '../../framework/vm';
+import { HostNode, HostElement } from '../../framework/renderer';
 
 export type VNodeStyle = Record<string, string>;
 export interface On {
@@ -31,7 +32,7 @@ export interface VNode {
     sel: string | undefined;
     data: VNodeData;
     children: VNodes | undefined;
-    elm: Node | undefined;
+    elm: HostNode | undefined;
     parentElm?: Element;
     text: string | undefined;
     key: Key | undefined;
@@ -42,12 +43,12 @@ export interface VNode {
 export interface VElement extends VNode {
     sel: string;
     children: VNodes;
-    elm: Element | undefined;
+    elm: HostElement | undefined;
     text: undefined;
     key: Key;
-    // TODO [#1364]: support the ability to provision a cloned StyleElement
-    // for native shadow as a perf optimization
-    clonedElement?: HTMLStyleElement;
+    // TODO [#1364]: support the ability to provision a cloned StyleElement for native shadow as a
+    // perf optimization
+    clonedElement?: HostElement;
 }
 
 export interface VCustomElement extends VElement {
@@ -61,7 +62,7 @@ export interface VCustomElement extends VElement {
 export interface VText extends VNode {
     sel: undefined;
     children: undefined;
-    elm: Node | undefined;
+    elm: HostNode | undefined;
     text: string;
     key: undefined;
 }
@@ -82,10 +83,10 @@ export interface VNodeData {
 
 export interface Hooks<N extends VNode> {
     create: (vNode: N) => void;
-    insert: (vNode: N, parentNode: Node, referenceNode: Node | null) => void;
-    move: (vNode: N, parentNode: Node, referenceNode: Node | null) => void;
+    insert: (vNode: N, parentNode: HostNode, referenceNode: HostNode | null) => void;
+    move: (vNode: N, parentNode: HostNode, referenceNode: HostNode | null) => void;
     update: (oldVNode: N, vNode: N) => void;
-    remove: (vNode: N, parentNode: Node) => void;
+    remove: (vNode: N, parentNode: HostNode) => void;
 }
 
 export interface Module<N extends VNode> {

@@ -27,7 +27,7 @@ import { addCallbackToNextTick, EmptyObject, EmptyArray } from './utils';
 import { invokeServiceHook, Services } from './services';
 import { invokeComponentCallback, invokeComponentRenderedCallback } from './invoker';
 
-import { Renderer } from './renderer';
+import { Renderer, HostNode, HostElement } from './renderer';
 import { VNodeData, VNodes, VCustomElement, VNode } from '../3rdparty/snabbdom/types';
 import { Template } from './template';
 import { ComponentDef } from './def';
@@ -59,17 +59,17 @@ export enum VMState {
 
 // TODO [#0]: How to get rid of the any as default generic value without passing them around through
 // the engine.
-export interface UninitializedVM<HostNode = unknown, HostElement = unknown> {
+export interface UninitializedVM<Node = HostNode, Element = HostElement> {
     /** Component Element Back-pointer */
-    readonly elm: HostElement;
+    readonly elm: Element;
     /** Component Definition */
     readonly def: ComponentDef;
     /** Component Context Object */
     readonly context: Context;
     /** Back-pointer to the owner VM or null for root elements */
-    readonly owner: VM<HostNode, HostElement> | null;
+    readonly owner: VM<Node, Element> | null;
     /** Rendering operations associated with the VM */
-    readonly renderer: Renderer<HostNode, HostElement>;
+    readonly renderer: Renderer<Node, Element>;
     /** Component Creation Index */
     idx: number;
     /** Component state, analogous to Element.isConnected */
@@ -99,23 +99,22 @@ export interface UninitializedVM<HostNode = unknown, HostElement = unknown> {
     // perf optimization to avoid reshaping the uninitialized when initialized
     cmpTemplate?: Template;
     component?: ComponentInterface;
-    cmpRoot?: ShadowRoot;
+    cmpRoot?: Node;
     tro?: ReactiveObserver;
     oar?: Record<PropertyKey, ReactiveObserver>;
 }
 
-export interface VM<HostNode = unknown, HostElement = unknown>
-    extends UninitializedVM<HostNode, HostElement> {
+export interface VM<Node = HostNode, Element = HostElement> extends UninitializedVM<Node, Element> {
     cmpTemplate: Template;
     component: ComponentInterface;
-    cmpRoot: ShadowRoot;
+    cmpRoot: Node;
     /** Template Reactive Observer to observe values used by the selected template */
     tro: ReactiveObserver;
     /** Reactive Observers for each of the public @api accessors */
     oar: Record<PropertyKey, ReactiveObserver>;
 }
 
-type VMAssociable = Node | LightningElement | ComponentInterface;
+type VMAssociable = Node | LightningElement | ComponentInterface | HostNode;
 
 let idx: number = 0;
 

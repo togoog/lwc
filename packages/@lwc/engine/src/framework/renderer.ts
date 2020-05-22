@@ -5,8 +5,8 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
 
-export type HostNode = unknown;
-export type HostElement = unknown;
+export interface HostNode {}
+export interface HostElement extends HostNode {}
 
 export interface Renderer<Node = HostNode, Element = HostElement> {
     syntheticShadow: boolean;
