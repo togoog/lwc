@@ -58,6 +58,7 @@ export interface Renderer<HostNode = any, HostElement = any> {
     remove(node: HostNode, parent: HostElement): void;
     createElement(tagName: string, namespace?: string): HostElement;
     createText(content: string): HostNode;
+    nextSibling(node: HostNode): HostNode | null;
     innerHTML(element: HostElement, text: string): void;
     attachShadow(
         element: HostElement,

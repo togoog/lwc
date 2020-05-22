@@ -80,6 +80,7 @@ function createContextWatcher(
     }
     const {
         elm,
+        renderer,
         context: { wiredConnecting, wiredDisconnecting },
     } = vm;
     // waiting for the component to be connected to formally request the context via the token
@@ -101,7 +102,7 @@ function createContextWatcher(
                 callbackWhenContextIsReady(newContext);
             },
         });
-        elm.dispatchEvent(internalDomEvent);
+        renderer.dispatchEvent(elm, internalDomEvent);
     });
 }
 
