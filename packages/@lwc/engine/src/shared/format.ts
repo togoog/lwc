@@ -9,10 +9,12 @@ import { isNull, ArrayJoin, ArrayPush, StringToLowerCase } from '@lwc/shared';
 import { UninitializedVM } from '../framework/vm';
 
 export function getComponentTag(vm: UninitializedVM): string {
+    const { renderer } = vm;
+
     // Element.prototype.tagName getter might be poisoned. We need to use a try/catch to protect the
     // engine internal when accessing the tagName property.
     try {
-        return `<${StringToLowerCase.call(vm.elm.tagName)}>`;
+        return `<${StringToLowerCase.call(renderer.tagName(vm.elm))}>`;
     } catch (error) {
         return '<invalid-tag-name>';
     }

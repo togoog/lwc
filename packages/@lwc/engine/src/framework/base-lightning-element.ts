@@ -81,9 +81,8 @@ function createBridgeToElementDescriptor(
             const vm = getAssociatedVM(this);
             if (isBeingConstructed(vm)) {
                 if (process.env.NODE_ENV !== 'production') {
-                    const name = vm.elm.constructor.name;
                     logError(
-                        `\`${name}\` constructor can't read the value of property \`${propName}\` because the owner component hasn't set the value yet. Instead, use the \`${name}\` constructor to set a default value for the property.`,
+                        `The value of property \`${propName}\` can't be read from the constructor because the owner component hasn't set the value yet. Instead, use the constructor to set a default value for the property.`,
                         vm
                     );
                 }
@@ -252,6 +251,7 @@ function BaseLightningElementConstructor(this: LightningElement) {
     const {
         elm,
         mode,
+        renderer,
         def: { ctor },
     } = vm;
     const component = this;
@@ -273,7 +273,7 @@ function BaseLightningElementConstructor(this: LightningElement) {
         delegatesFocus: !!ctor.delegatesFocus,
         '$$lwc-synthetic-mode$$': true,
     };
-    const cmpRoot = elm.attachShadow(shadowRootOptions);
+    const cmpRoot = renderer.attachShadow(elm, shadowRootOptions);
     // linking elm, shadow root and component with the VM
     associateVM(component, vm);
     associateVM(cmpRoot, vm);
@@ -472,7 +472,7 @@ BaseLightningElementConstructor.prototype = {
             );
         }
 
-        return querySelector(elm, selectors);
+        return querySelector(elm, selectors) as Element | undefined;
     },
 
     querySelectorAll(selectors: string): NodeList {
