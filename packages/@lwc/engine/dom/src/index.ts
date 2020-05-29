@@ -5,17 +5,18 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
 
-// Re-exporting all the @lwc/engine-core APIs until the module decoupling is done.
+// Polyfills ---------------------------------------------------------------------------------------
+import './polyfills/proxy-concat/main';
+import './polyfills/aria-properties/main';
+
 export {
     createContextProvider,
-    LightningElement,
     register,
     api,
     track,
     wire,
     readonly,
     unwrap,
-    buildCustomElementConstructor,
     setFeatureFlag,
     setFeatureFlagForTest,
     registerTemplate,
@@ -26,11 +27,9 @@ export {
     isComponentConstructor,
 } from '../../src';
 
-// Polyfills ---------------------------------------------------------------------------------------
-import './polyfills/proxy-concat/main';
-import './polyfills/aria-properties/main';
-
 // Public APIs -------------------------------------------------------------------------------------
+export { deprecatedBuildCustomElementConstructor as buildCustomElementConstructor } from './apis/build-custom-element-constructor';
 export { createElement } from './apis/create-element';
 export { getComponentConstructor } from './apis/get-component-constructor';
 export { isNodeFromTemplate } from './apis/is-node-from-template';
+export { LightningElement } from './apis/lightning-element';

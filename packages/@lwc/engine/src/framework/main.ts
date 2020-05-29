@@ -15,8 +15,7 @@ export { default as track } from './decorators/track';
 export { default as wire } from './decorators/wire';
 export { readonly } from './readonly';
 export { unwrap } from './membrane';
-
-export { deprecatedBuildCustomElementConstructor as buildCustomElementConstructor } from './wc';
+export { buildCustomElementConstructor } from './wc';
 
 export { setFeatureFlag, setFeatureFlagForTest } from '@lwc/features';
 

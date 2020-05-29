@@ -1,7 +1,16 @@
 {
     "name": "@lwc/wire-service",
-    "version": "1.6.6",
+    "version": "1.6.8",
     "description": "@wire service",
+    "homepage": "https://lwc.dev/",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/salesforce/lwc.git",
+        "directory": "packages/@lwc/wire-service"
+    },
+    "bugs": {
+        "url": "https://github.com/salesforce/lwc/issues"
+    },
     "license": "MIT",
     "main": "dist/wire-service.cjs.js",
     "module": "dist/wire-service.js",
@@ -19,10 +28,10 @@
         "types/"
     ],
     "devDependencies": {
-        "@lwc/compiler": "1.6.6",
-        "@lwc/engine": "1.6.6",
-        "@lwc/rollup-plugin": "1.6.6",
-        "@lwc/shared": "1.6.6"
+        "@lwc/compiler": "1.6.8",
+        "@lwc/engine": "1.6.8",
+        "@lwc/rollup-plugin": "1.6.8",
+        "@lwc/shared": "1.6.8"
     },
     "lwc": {
         "modules": [
