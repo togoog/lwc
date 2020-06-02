@@ -7,8 +7,6 @@
 
 import { create, isUndefined, keys } from '@lwc/shared';
 
-import { LightningElement } from './lightning-element';
-
 import {
     createVM,
     connectRootElement,
@@ -17,6 +15,9 @@ import {
     getComponentInternalDef,
     isAttributeLocked,
 } from '../../../src';
+
+import { LightningElement } from './lightning-element';
+import { renderer } from '../renderer';
 
 type ComponentConstructor = typeof LightningElement;
 type HTMLElementConstructor = typeof HTMLElement;
@@ -64,10 +65,10 @@ export function buildCustomElementConstructor(Ctor: ComponentConstructor): HTMLE
         constructor() {
             super();
             createVM(this, def, {
-                mode: 'open',
                 isRoot: true,
+                mode: 'open',
                 owner: null,
-                renderer: {} as any, // FIXME: How can the renderer be retrieved from here?
+                renderer,
                 tagName: this.tagName,
             });
         }
