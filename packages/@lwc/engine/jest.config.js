@@ -13,7 +13,7 @@ module.exports = {
 
     displayName: 'lwc-engine-core',
 
-    roots: ['<rootDir>/src'],
+    roots: ['<rootDir>/src', '<rootDir>/dom/src', '<rootDir>/server/src'],
 
     // Customize setup for the engine tests.
     setupFilesAfterEnv: [path.resolve(__dirname, 'scripts/jest/setup-test.js')],
