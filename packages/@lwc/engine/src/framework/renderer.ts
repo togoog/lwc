@@ -45,5 +45,4 @@ export interface Renderer<Node = HostNode, Element = HostElement> {
     getElementsByTagName(element: Element, tagNameOrWildCard: string): HTMLCollection;
     getElementsByClassName(element: Element, names: string): HTMLCollection;
     isConnected(node: Node): boolean;
-    tagName(element: Element): string;
 }

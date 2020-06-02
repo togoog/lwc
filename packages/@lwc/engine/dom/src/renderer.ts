@@ -117,8 +117,4 @@ export const renderer: Renderer<Node, Element> = {
     isConnected(node: Node): boolean {
         return node.isConnected;
     },
-
-    tagName(element: Element): string {
-        return element.tagName;
-    },
 };

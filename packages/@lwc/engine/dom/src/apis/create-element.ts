@@ -25,7 +25,7 @@ import {
     getAssociatedVMIfPresent,
     createVM,
     connectRootElement,
-    disconnectedRootElement,
+    disconnectRootElement,
 } from '../../../src';
 
 import { renderer } from '../renderer';
@@ -118,6 +118,7 @@ export function createElement(
     setElementProto(element, def);
 
     createVM(element, def, {
+        tagName: sel,
         mode: options.mode !== 'closed' ? 'open' : 'closed',
         owner: null,
         isRoot: true,
@@ -125,7 +126,7 @@ export function createElement(
     });
 
     setHiddenField(element, ConnectingSlot, connectRootElement);
-    setHiddenField(element, DisconnectingSlot, disconnectedRootElement);
+    setHiddenField(element, DisconnectingSlot, disconnectRootElement);
 
     return element;
 }

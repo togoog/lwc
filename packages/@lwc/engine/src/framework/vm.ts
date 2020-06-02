@@ -57,9 +57,9 @@ export enum VMState {
     disconnected,
 }
 
-// TODO [#0]: How to get rid of the any as default generic value without passing them around through
-// the engine.
 export interface UninitializedVM<Node = HostNode, Element = HostElement> {
+    /** Custom element tag name */
+    readonly tagName: string;
     /** Component Element Back-pointer */
     readonly elm: Element;
     /** Component Definition */
@@ -149,7 +149,7 @@ export function connectRootElement(elm: any) {
     // Usually means moving the element from one place to another, which is observable via
     // life-cycle hooks.
     if (vm.state === VMState.connected) {
-        disconnectedRootElement(elm);
+        disconnectRootElement(elm);
     }
 
     runConnectedCallback(vm);
@@ -158,7 +158,7 @@ export function connectRootElement(elm: any) {
     endGlobalMeasure(GlobalMeasurementPhase.HYDRATE, vm);
 }
 
-export function disconnectedRootElement(elm: any) {
+export function disconnectRootElement(elm: HTMLElement) {
     const vm = getAssociatedVM(elm);
     resetComponentStateWhenRemoved(vm);
 }
@@ -206,9 +206,10 @@ export function createVM<HostNode, HostElement>(
         owner: VM<HostNode, HostElement> | null;
         isRoot: boolean;
         renderer: Renderer;
+        tagName: string;
     }
 ): VM<HostNode, HostElement> {
-    const { isRoot, mode, owner, renderer } = options;
+    const { isRoot, mode, owner, renderer, tagName } = options;
     idx += 1;
     const uninitializedVm: UninitializedVM = {
         // component creation index is defined once, and never reset, it can
@@ -221,6 +222,7 @@ export function createVM<HostNode, HostElement>(
         mode,
         def,
         owner,
+        tagName,
         elm,
         renderer,
         data: EmptyObject,
