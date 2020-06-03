@@ -59,19 +59,19 @@ export enum VMState {
 
 // TODO [#0]: How to get rid of the any as default generic value without passing them around through
 // the engine.
-export interface UninitializedVM<Node = HostNode, Element = HostElement> {
+export interface UninitializedVM<N = HostNode, E = HostElement> {
     /** Custom element tag name */
     readonly tagName: string;
     /** Component Element Back-pointer */
-    readonly elm: Element;
+    readonly elm: E;
     /** Component Definition */
     readonly def: ComponentDef;
     /** Component Context Object */
     readonly context: Context;
     /** Back-pointer to the owner VM or null for root elements */
-    readonly owner: VM<Node, Element> | null;
+    readonly owner: VM<N, E> | null;
     /** Rendering operations associated with the VM */
-    readonly renderer: Renderer<Node, Element>;
+    readonly renderer: Renderer<N, E>;
     /** Component Creation Index */
     idx: number;
     /** Component state, analogous to Element.isConnected */
@@ -106,7 +106,7 @@ export interface UninitializedVM<Node = HostNode, Element = HostElement> {
     oar?: Record<PropertyKey, ReactiveObserver>;
 }
 
-export interface VM<Node = HostNode, Element = HostElement> extends UninitializedVM<Node, Element> {
+export interface VM<N = HostNode, E = HostElement> extends UninitializedVM<N, E> {
     cmpTemplate: Template;
     component: ComponentInterface;
     cmpRoot: ShadowRoot;
