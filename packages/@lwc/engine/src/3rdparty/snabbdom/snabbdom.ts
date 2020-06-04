@@ -14,6 +14,7 @@ https://github.com/snabbdom/snabbdom/
 */
 
 import { VNode, VNodes, Key } from './types';
+import { RendererInterface } from '../../framework/renderer';
 
 function isUndef(s: any): s is undefined {
     return s === undefined;
@@ -23,15 +24,15 @@ interface KeyToIndexMap {
     [key: string]: number;
 }
 
-function sameVnode(vnode1: VNode, vnode2: VNode): boolean {
+function sameVnode<I extends RendererInterface>(vnode1: VNode<I>, vnode2: VNode<I>): boolean {
     return vnode1.key === vnode2.key && vnode1.sel === vnode2.sel;
 }
 
-function isVNode(vnode: any): vnode is VNode {
+function isVNode<I extends RendererInterface>(vnode: any): vnode is VNode<I> {
     return vnode != null;
 }
 
-function createKeyToOldIdx(children: VNodes, beginIdx: number, endIdx: number): KeyToIndexMap {
+function createKeyToOldIdx(children: VNodes<any>, beginIdx: number, endIdx: number): KeyToIndexMap {
     const map: KeyToIndexMap = {};
     let j: number, key: Key | undefined, ch;
     // TODO [#1637]: simplify this by assuming that all vnodes has keys
@@ -47,10 +48,10 @@ function createKeyToOldIdx(children: VNodes, beginIdx: number, endIdx: number): 
     return map;
 }
 
-function addVnodes(
-    parentElm: Node,
-    before: Node | null,
-    vnodes: VNodes,
+function addVnodes<I extends RendererInterface>(
+    parentElm: I['Node'],
+    before: I['Node'] | null,
+    vnodes: VNodes<I>,
     startIdx: number,
     endIdx: number
 ) {
@@ -63,7 +64,12 @@ function addVnodes(
     }
 }
 
-function removeVnodes(parentElm: Node, vnodes: VNodes, startIdx: number, endIdx: number): void {
+function removeVnodes<I extends RendererInterface>(
+    parentElm: I['Node'],
+    vnodes: VNodes<I>,
+    startIdx: number,
+    endIdx: number
+): void {
     for (; startIdx <= endIdx; ++startIdx) {
         const ch = vnodes[startIdx];
         // text nodes do not have logic associated to them
@@ -73,7 +79,11 @@ function removeVnodes(parentElm: Node, vnodes: VNodes, startIdx: number, endIdx:
     }
 }
 
-export function updateDynamicChildren(parentElm: Node, oldCh: VNodes, newCh: VNodes) {
+export function updateDynamicChildren<I extends RendererInterface>(
+    parentElm: I['Node'],
+    oldCh: VNodes<I>,
+    newCh: VNodes<I>
+) {
     let oldStartIdx = 0;
     let newStartIdx = 0;
     let oldEndIdx = oldCh.length - 1;
@@ -84,7 +94,7 @@ export function updateDynamicChildren(parentElm: Node, oldCh: VNodes, newCh: VNo
     let newEndVnode = newCh[newEndIdx];
     let oldKeyToIdx: any;
     let idxInOld: number;
-    let elmToMove: VNode | null | undefined;
+    let elmToMove: VNode<I> | null | undefined;
     let before: any;
     while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
         if (!isVNode(oldStartVnode)) {
@@ -157,7 +167,11 @@ export function updateDynamicChildren(parentElm: Node, oldCh: VNodes, newCh: VNo
     }
 }
 
-export function updateStaticChildren(parentElm: Node, oldCh: VNodes, newCh: VNodes) {
+export function updateStaticChildren<I extends RendererInterface>(
+    parentElm: I['Node'],
+    oldCh: VNodes<I>,
+    newCh: VNodes<I>
+) {
     const { length } = newCh;
     if (oldCh.length === 0) {
         // the old list is empty, we can directly insert anything new
@@ -166,7 +180,7 @@ export function updateStaticChildren(parentElm: Node, oldCh: VNodes, newCh: VNod
     }
     // if the old list is not empty, the new list MUST have the same
     // amount of nodes, that's why we call this static children
-    let referenceElm: Node | null = null;
+    let referenceElm: I['Node'] | null = null;
     for (let i = length - 1; i >= 0; i -= 1) {
         const vnode = newCh[i];
         const oldVNode = oldCh[i];
@@ -191,7 +205,7 @@ export function updateStaticChildren(parentElm: Node, oldCh: VNodes, newCh: VNod
     }
 }
 
-function patchVnode(oldVnode: VNode, vnode: VNode) {
+function patchVnode<I extends RendererInterface>(oldVnode: VNode<I>, vnode: VNode<I>): void {
     if (oldVnode !== vnode) {
         vnode.elm = oldVnode.elm;
         vnode.hook.update(oldVnode, vnode);

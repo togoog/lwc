@@ -14,6 +14,7 @@
  */
 
 import { VM } from '../../framework/vm';
+import { RendererInterface } from '../../framework/renderer';
 
 export type VNodeStyle = Record<string, string>;
 export interface On {
@@ -25,24 +26,24 @@ export type Props = Record<string, any>;
 
 export type Key = string | number;
 
-export type VNodes = Array<VNode | null>;
+export type VNodes<I extends RendererInterface> = Array<VNode<I> | null>;
 
-export interface VNode {
+export interface VNode<I extends RendererInterface> {
     sel: string | undefined;
     data: VNodeData;
-    children: VNodes | undefined;
-    elm: Node | undefined;
-    parentElm?: Element;
+    children: VNodes<I> | undefined;
+    elm: I['Node'] | undefined;
+    parentElm?: I['Element'];
     text: string | undefined;
     key: Key | undefined;
-    hook: Hooks<any>;
-    owner: VM;
+    hook: Hooks<I>;
+    owner: VM<I>;
 }
 
-export interface VElement extends VNode {
+export interface VElement<I extends RendererInterface> extends VNode<I> {
     sel: string;
-    children: VNodes;
-    elm: Element | undefined;
+    children: VNodes<I>;
+    elm: I['Element'] | undefined;
     text: undefined;
     key: Key;
     // TODO [#1364]: support the ability to provision a cloned StyleElement
@@ -50,18 +51,18 @@ export interface VElement extends VNode {
     clonedElement?: HTMLStyleElement;
 }
 
-export interface VCustomElement extends VElement {
+export interface VCustomElement<I extends RendererInterface> extends VElement<I> {
     mode: 'closed' | 'open';
     ctor: any;
-    clonedElement?: undefined;
+    clonedElement?: I['Element'];
     // copy of the last allocated children.
-    aChildren?: VNodes;
+    aChildren?: VNodes<I>;
 }
 
-export interface VText extends VNode {
+export interface VText<I extends RendererInterface> extends VNode<I> {
     sel: undefined;
     children: undefined;
-    elm: Node | undefined;
+    elm: I['Node'] | undefined;
     text: string;
     key: undefined;
 }
@@ -80,15 +81,15 @@ export interface VNodeData {
     ns?: string; // for SVGs
 }
 
-export interface Hooks<N extends VNode> {
-    create: (vNode: N) => void;
-    insert: (vNode: N, parentNode: Node, referenceNode: Node | null) => void;
-    move: (vNode: N, parentNode: Node, referenceNode: Node | null) => void;
-    update: (oldVNode: N, vNode: N) => void;
-    remove: (vNode: N, parentNode: Node) => void;
+export interface Hooks<I extends RendererInterface> {
+    create: (vNode: VNode<I>) => void;
+    insert: (vNode: VNode<I>, parentNode: I['Node'], referenceNode: I['Node'] | null) => void;
+    move: (vNode: VNode<I>, parentNode: I['Node'], referenceNode: I['Node'] | null) => void;
+    update: (oldVNode: VNode<I>, vNode: VNode<I>) => void;
+    remove: (vNode: VNode<I>, parentNode: I['Node']) => void;
 }
 
-export interface Module<N extends VNode> {
-    create?: (vNode: N) => void;
-    update?: (oldVNode: N, vNode: N) => void;
+export interface Module<I extends RendererInterface> {
+    create?: (vNode: VNode<I>) => void;
+    update?: (oldVNode: VNode<I>, vNode: VNode<I>) => void;
 }

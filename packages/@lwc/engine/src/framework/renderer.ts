@@ -5,44 +5,67 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
 
-export type HostNode = any;
-export type HostElement = any;
+export type Opaque<T extends string> = {
+    readonly __opaque__: T;
+};
 
-export interface Renderer<N = HostNode, E = HostElement> {
+export interface RendererInterface {
+    Node: Opaque<'Node'>;
+    Element: Opaque<'Element'>;
+    HTMLElement: Opaque<'HTMLElement'>;
+    ShadowRoot: Opaque<'ShadowRoot'>;
+
+    Event: Opaque<'Event'>;
+    AddEventListenerOptions: Opaque<'AddEventListenerOptions'>;
+
+    DOMTokenList: Opaque<'DOMTokenList'>;
+    NodeList: Opaque<'NodeList'>;
+    HTMLCollection: Opaque<'HTMLCollection'>;
+
+    ClientRect: Opaque<'ClientRect'>;
+    CSSStyleDeclaration: Opaque<'CSSStyleDeclaration'>;
+}
+
+export interface Renderer<I extends RendererInterface> {
     syntheticShadow: boolean;
-    insert(node: N, parent: E, anchor: N | null): void;
-    remove(node: N, parent: E): void;
-    createElement(tagName: string, namespace?: string): E;
-    createText(content: string): N;
-    nextSibling(node: N): N | null;
+    insert(node: I['Node'], parent: I['Node'], anchor: I['Node'] | null): void;
+    remove(node: I['Node'], parent: I['Node']): void;
+    createElement(tagName: string, namespace?: string): I['Element'];
+    createText(content: string): I['Node'];
+    nextSibling(node: I['Node']): I['Node'] | null;
     attachShadow(
-        element: E,
+        element: I['Element'],
         options: { mode: 'open' | 'closed'; delegatesFocus?: boolean; [key: string]: any }
-    ): N;
-    setText(node: N, content: string): void;
-    getAttribute(element: E, name: string, namespace?: string | null): string | null;
-    setAttribute(element: E, name: string, value: string, namespace?: string | null): void;
-    removeAttribute(element: E, name: string, namespace?: string | null): void;
+    ): I['Node'];
+    setText(node: I['Node'], content: string): void;
+    getAttribute(element: I['Element'], name: string, namespace?: string | null): string | null;
+    setAttribute(
+        element: I['Element'],
+        name: string,
+        value: string,
+        namespace?: string | null
+    ): void;
+    removeAttribute(element: I['Element'], name: string, namespace?: string | null): void;
     addEventListener(
-        target: E,
+        target: I['Element'],
         type: string,
-        callback: (event: Event) => any,
-        options?: AddEventListenerOptions | boolean
+        callback: (event: I['Element']) => any,
+        options?: I['AddEventListenerOptions'] | boolean
     ): void;
     removeEventListener(
-        target: E,
+        target: I['Element'],
         type: string,
-        callback: (event: Event) => any,
-        options?: AddEventListenerOptions | boolean
+        callback: (event: I['Event']) => any,
+        options?: I['AddEventListenerOptions'] | boolean
     ): void;
-    dispatchEvent(target: N, event: Event): boolean;
-    getClassList(element: E): DOMTokenList;
-    getStyleDeclaration(element: E): CSSStyleDeclaration;
-    getBoundingClientRect(element: E): ClientRect;
-    querySelector(element: E, selectors: string): E | null;
-    querySelectorAll(element: E, selectors: string): NodeList;
-    getElementsByTagName(element: E, tagNameOrWildCard: string): HTMLCollection;
-    getElementsByClassName(element: E, names: string): HTMLCollection;
-    isConnected(node: N): boolean;
-    tagName(element: E): string;
+    dispatchEvent(target: I['Node'], event: I['Event']): boolean;
+    getClassList(element: I['Element']): I['DOMTokenList'];
+    getStyleDeclaration(element: I['Element']): I['CSSStyleDeclaration'];
+    getBoundingClientRect(element: I['Element']): I['ClientRect'];
+    querySelector(element: I['Element'], selectors: string): I['Element'] | null;
+    querySelectorAll(element: I['Element'], selectors: string): I['NodeList'];
+    getElementsByTagName(element: I['Element'], tagNameOrWildCard: string): I['HTMLCollection'];
+    getElementsByClassName(element: I['Element'], names: string): I['HTMLCollection'];
+    isConnected(node: I['Node']): boolean;
+    tagName(element: I['Element']): string;
 }

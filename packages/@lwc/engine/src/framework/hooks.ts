@@ -27,18 +27,19 @@ import modStaticStyle from './modules/static-style-attr';
 import { updateDynamicChildren, updateStaticChildren } from '../3rdparty/snabbdom/snabbdom';
 import { patchElementWithRestrictions, unlockDomMutation, lockDomMutation } from './restrictions';
 import { getComponentInternalDef, setElementProto } from './def';
+import { RendererInterface } from './renderer';
 
 const noop = () => void 0;
 
-function observeElementChildNodes(elm: Element) {
-    (elm as any).$domManual$ = true;
+function observeElementChildNodes(elm: any) {
+    elm.$domManual$ = true;
 }
 
-function setElementShadowToken(elm: Element, token: string | undefined) {
-    (elm as any).$shadowToken$ = token;
+function setElementShadowToken(elm: any, token: string | undefined) {
+    elm.$shadowToken$ = token;
 }
 
-export function updateNodeHook(oldVnode: VNode, vnode: VNode) {
+export function updateNodeHook<I extends RendererInterface>(oldVnode: VNode<I>, vnode: VNode<I>) {
     const {
         elm,
         text,
@@ -49,14 +50,18 @@ export function updateNodeHook(oldVnode: VNode, vnode: VNode) {
         if (process.env.NODE_ENV !== 'production') {
             unlockDomMutation();
         }
-        renderer.setText(elm, text!);
+        renderer.setText(elm!, text!);
         if (process.env.NODE_ENV !== 'production') {
             lockDomMutation();
         }
     }
 }
 
-export function insertNodeHook(vnode: VNode, parentNode: Node, referenceNode: Node | null) {
+export function insertNodeHook<I extends RendererInterface>(
+    vnode: VNode<I>,
+    parentNode: I['Node'],
+    referenceNode: I['Node'] | null
+) {
     const { renderer } = vnode.owner;
 
     if (process.env.NODE_ENV !== 'production') {
@@ -68,7 +73,10 @@ export function insertNodeHook(vnode: VNode, parentNode: Node, referenceNode: No
     }
 }
 
-export function removeNodeHook(vnode: VNode, parentNode: Node) {
+export function removeNodeHook<I extends RendererInterface>(
+    vnode: VNode<I>,
+    parentNode: I['Node']
+) {
     const { renderer } = vnode.owner;
 
     if (process.env.NODE_ENV !== 'production') {
@@ -80,7 +88,7 @@ export function removeNodeHook(vnode: VNode, parentNode: Node) {
     }
 }
 
-export function createElmHook(vnode: VElement) {
+export function createElmHook<I extends RendererInterface>(vnode: VElement<I>) {
     modEvents.create(vnode);
     // Attrs need to be applied to element before props
     // IE11 will wipe out value on radio inputs if value
@@ -97,7 +105,10 @@ enum LWCDOMMode {
     manual = 'manual',
 }
 
-export function fallbackElmHook(elm: Element, vnode: VElement) {
+export function fallbackElmHook<I extends RendererInterface>(
+    elm: I['Element'],
+    vnode: VElement<I>
+) {
     const { owner } = vnode;
     if (isTrue(owner.renderer.syntheticShadow)) {
         const {
@@ -128,7 +139,10 @@ export function fallbackElmHook(elm: Element, vnode: VElement) {
     }
 }
 
-export function updateElmHook(oldVnode: VElement, vnode: VElement) {
+export function updateElmHook<I extends RendererInterface>(
+    oldVnode: VElement<I>,
+    vnode: VElement<I>
+) {
     // Attrs need to be applied to element before props
     // IE11 will wipe out value on radio inputs if value
     // is set before type=radio.
@@ -138,12 +152,15 @@ export function updateElmHook(oldVnode: VElement, vnode: VElement) {
     modComputedStyle.update(oldVnode, vnode);
 }
 
-export function insertCustomElmHook(vnode: VCustomElement) {
+export function insertCustomElmHook<I extends RendererInterface>(vnode: VCustomElement<I>) {
     const vm = getAssociatedVM(vnode.elm!);
     appendVM(vm);
 }
 
-export function updateChildrenHook(oldVnode: VElement, vnode: VElement) {
+export function updateChildrenHook<I extends RendererInterface>(
+    oldVnode: VElement<I>,
+    vnode: VElement<I>
+) {
     const { children, owner } = vnode;
     const fn = hasDynamicChildren(children) ? updateDynamicChildren : updateStaticChildren;
     runWithBoundaryProtection(
@@ -157,7 +174,7 @@ export function updateChildrenHook(oldVnode: VElement, vnode: VElement) {
     );
 }
 
-export function allocateChildrenHook(vnode: VCustomElement) {
+export function allocateChildrenHook<I extends RendererInterface>(vnode: VCustomElement<I>) {
     const vm = getAssociatedVM(vnode.elm!);
     // A component with slots will re-render because:
     // 1- There is a change of the internal state.
@@ -182,7 +199,10 @@ export function allocateChildrenHook(vnode: VCustomElement) {
     }
 }
 
-export function createViewModelHook(elm: HTMLElement, vnode: VCustomElement) {
+export function createViewModelHook<I extends RendererInterface>(
+    elm: I['Element'],
+    vnode: VCustomElement<I>
+) {
     if (!isUndefined(getAssociatedVMIfPresent(elm))) {
         // There is a possibility that a custom element is registered under tagName,
         // in which case, the initialization is already carry on, and there is nothing else
@@ -278,14 +298,14 @@ export function removeCustomElmHook(vnode: VCustomElement) {
 }
 
 // Using a WeakMap instead of a WeakSet because this one works in IE11 :(
-const FromIteration: WeakMap<VNodes, 1> = new WeakMap();
+const FromIteration: WeakMap<VNodes<any>, 1> = new WeakMap();
 
 // dynamic children means it was generated by an iteration
 // in a template, and will require a more complex diffing algo.
-export function markAsDynamicChildren(children: VNodes) {
+export function markAsDynamicChildren(children: VNodes<any>) {
     FromIteration.set(children, 1);
 }
 
-export function hasDynamicChildren(children: VNodes): boolean {
+export function hasDynamicChildren(children: VNodes<any>): boolean {
     return FromIteration.has(children);
 }

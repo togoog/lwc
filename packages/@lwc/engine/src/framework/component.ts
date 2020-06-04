@@ -16,6 +16,7 @@ import { VNodes } from '../3rdparty/snabbdom/types';
 import { ReactiveObserver } from '../libs/mutation-tracker';
 import { LightningElementConstructor } from './base-lightning-element';
 import { Template, isUpdatingTemplate, getVMBeingRendered } from './template';
+import { RendererInterface } from './renderer';
 
 export type ErrorCallback = (error: any, stack: string) => void;
 export interface ComponentInterface {
@@ -54,7 +55,10 @@ export function getComponentRegisteredMeta(Ctor: ComponentConstructor): Componen
     return signedComponentToMetaMap.get(Ctor);
 }
 
-export function createComponent(uninitializedVm: UninitializedVM, Ctor: ComponentConstructor) {
+export function createComponent<I extends RendererInterface>(
+    uninitializedVm: UninitializedVM<I>,
+    Ctor: ComponentConstructor
+) {
     // create the component instance
     invokeComponentConstructor(uninitializedVm, Ctor);
 

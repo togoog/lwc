@@ -42,13 +42,12 @@ import {
 import { updateDynamicChildren, updateStaticChildren } from '../3rdparty/snabbdom/snabbdom';
 import { hasDynamicChildren } from './hooks';
 import { ReactiveObserver } from './mutation-tracker';
-import { LightningElement } from './base-lightning-element';
 import { getErrorComponentStack } from '../shared/format';
 import { connectWireAdapters, disconnectWireAdapters, installWireAdapters } from './wiring';
-import { Renderer, HostNode, HostElement } from './renderer';
+import { RendererInterface, Renderer } from './renderer';
 
-export interface SlotSet {
-    [key: string]: VNodes;
+export interface SlotSet<I extends RendererInterface> {
+    [key: string]: VNodes<I>;
 }
 
 export enum VMState {
@@ -59,31 +58,31 @@ export enum VMState {
 
 // TODO [#0]: How to get rid of the any as default generic value without passing them around through
 // the engine.
-export interface UninitializedVM<N = HostNode, E = HostElement> {
+export interface UninitializedVM<I extends RendererInterface> {
     /** Custom element tag name */
     readonly tagName: string;
     /** Component Element Back-pointer */
-    readonly elm: E;
+    readonly elm: I['HTMLElement'];
     /** Component Definition */
     readonly def: ComponentDef;
     /** Component Context Object */
     readonly context: Context;
     /** Back-pointer to the owner VM or null for root elements */
-    readonly owner: VM<N, E> | null;
+    readonly owner: VM<I> | null;
     /** Rendering operations associated with the VM */
-    readonly renderer: Renderer<N, E>;
+    readonly renderer: Renderer<I>;
     /** Component Creation Index */
     idx: number;
     /** Component state, analogous to Element.isConnected */
     state: VMState;
     data: VNodeData;
     /** Shadow Children List */
-    children: VNodes;
+    children: VNodes<I>;
     /** Adopted Children List */
-    aChildren: VNodes;
-    velements: VCustomElement[];
+    aChildren: VNodes<I>;
+    velements: VCustomElement<I>[];
     cmpProps: Record<string, any>;
-    cmpSlots: SlotSet;
+    cmpSlots: SlotSet<I>;
     cmpFields: Record<string, any>;
     callHook: (
         cmp: ComponentInterface | undefined,
@@ -101,22 +100,20 @@ export interface UninitializedVM<N = HostNode, E = HostElement> {
     // perf optimization to avoid reshaping the uninitialized when initialized
     cmpTemplate?: Template;
     component?: ComponentInterface;
-    cmpRoot?: ShadowRoot;
+    cmpRoot?: I['ShadowRoot'];
     tro?: ReactiveObserver;
     oar?: Record<PropertyKey, ReactiveObserver>;
 }
 
-export interface VM<N = HostNode, E = HostElement> extends UninitializedVM<N, E> {
+export interface VM<I extends RendererInterface> extends UninitializedVM<I> {
     cmpTemplate: Template;
     component: ComponentInterface;
-    cmpRoot: ShadowRoot;
+    cmpRoot: I['ShadowRoot'];
     /** Template Reactive Observer to observe values used by the selected template */
     tro: ReactiveObserver;
     /** Reactive Observers for each of the public @api accessors */
     oar: Record<PropertyKey, ReactiveObserver>;
 }
-
-type VMAssociable = Node | LightningElement | ComponentInterface;
 
 let idx: number = 0;
 
@@ -200,17 +197,17 @@ export function removeVM(vm: VM) {
     resetComponentStateWhenRemoved(vm);
 }
 
-export function createVM<HostNode, HostElement>(
-    elm: HostElement,
+export function createVM<I extends RendererInterface>(
+    elm: I['HTMLElement'],
     def: ComponentDef,
     options: {
         mode: 'open' | 'closed';
-        owner: VM<HostNode, HostElement> | null;
+        owner: VM<I> | null;
         isRoot: boolean;
         tagName: string;
-        renderer: Renderer;
+        renderer: Renderer<I>;
     }
-): VM<HostNode, HostElement> {
+): VM<I> {
     const { isRoot, mode, owner, tagName, renderer } = options;
     idx += 1;
     const uninitializedVm: UninitializedVM = {
@@ -256,7 +253,7 @@ export function createVM<HostNode, HostElement>(
     createComponent(uninitializedVm, def.ctor);
 
     // link component to the wire service
-    const initializedVm = uninitializedVm as VM<HostNode, HostElement>;
+    const initializedVm = uninitializedVm as VM<I>;
     // initializing the wire decorator per instance only when really needed
     if (hasWireAdapters(initializedVm)) {
         installWireAdapters(initializedVm);
@@ -271,11 +268,11 @@ function assertIsVM(obj: any): asserts obj is VM {
     }
 }
 
-export function associateVM(obj: VMAssociable, vm: VM) {
+export function associateVM(obj: unknown, vm: VM) {
     setHiddenField(obj, ViewModelReflection, vm);
 }
 
-export function getAssociatedVM(obj: VMAssociable): VM {
+export function getAssociatedVM(obj: unknown): VM {
     const vm = getHiddenField(obj, ViewModelReflection);
 
     if (process.env.NODE_ENV !== 'production') {
@@ -285,7 +282,7 @@ export function getAssociatedVM(obj: VMAssociable): VM {
     return vm!;
 }
 
-export function getAssociatedVMIfPresent(obj: VMAssociable): VM | undefined {
+export function getAssociatedVMIfPresent(obj: unknown): VM | undefined {
     const maybeVm = getHiddenField(obj, ViewModelReflection);
 
     if (process.env.NODE_ENV !== 'production') {
@@ -304,7 +301,7 @@ function rehydrate(vm: VM) {
     }
 }
 
-function patchShadowRoot(vm: VM, newCh: VNodes) {
+function patchShadowRoot<I extends RendererInterface>(vm: VM<I>, newCh: VNodes<I>) {
     const { cmpRoot, children: oldCh } = vm;
 
     // caching the new children collection
@@ -497,9 +494,9 @@ function runLightChildNodesDisconnectedCallback(vm: VM) {
  * custom element itself will trigger the removal of anything slotted or anything
  * defined on its shadow.
  */
-function recursivelyDisconnectChildren(vnodes: VNodes) {
+function recursivelyDisconnectChildren<I extends RendererInterface>(vnodes: VNodes<I>) {
     for (let i = 0, len = vnodes.length; i < len; i += 1) {
-        const vnode: VCustomElement | VNode | null = vnodes[i];
+        const vnode: VCustomElement<I> | VNode<I> | null = vnodes[i];
         if (!isNull(vnode) && isArray(vnode.children) && !isUndefined(vnode.elm)) {
             // vnode is a VElement with children
             if (isUndefined((vnode as any).ctor)) {
@@ -507,7 +504,7 @@ function recursivelyDisconnectChildren(vnodes: VNodes) {
                 recursivelyDisconnectChildren(vnode.children);
             } else {
                 // it is a VCustomElement, disconnect it and ignore its children
-                resetComponentStateWhenRemoved(getAssociatedVM(vnode.elm as HTMLElement));
+                resetComponentStateWhenRemoved(getAssociatedVM(vnode.elm));
             }
         }
     }
