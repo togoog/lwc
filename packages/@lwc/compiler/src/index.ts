@@ -6,5 +6,11 @@
  */
 export { compile } from './compiler/compiler';
 export { transform, transformSync } from './transformers/transformer';
+export type {
+    CompileOptions,
+    TransformOptions,
+    DynamicComponentConfig,
+    StylesheetConfig,
+} from './options';
 
 export const version = '__VERSION__';
