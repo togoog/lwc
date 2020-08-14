@@ -94,14 +94,3 @@ class Foo {
 var num = 1;
 num **= 2;
 console.log(num);
-
-// babel-plugin-transform-object-rest-spread
-// https://github.com/babel/babel/blob/6.x/packages/babel-plugin-transform-object-rest-spread/test/fixtures/object-spread/assignment/actual.js
-z = { x, ...y };
-z = { x, w: { ...y } };
-
-// babel-plugin-transform-class-properties
-// https://github.com/babel/babel/blob/master/packages/babel-plugin-transform-class-properties/test/fixtures/loose/instance/actual.js
-export class Bar {
-  bar = "foo";
-}

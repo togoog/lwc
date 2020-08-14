@@ -1,6 +1,4 @@
-import { registerDecorators } from 'lwc';
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? Object(arguments[i]) : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+// babel-plugin-check-es2015-constants
 // https://github.com/babel/babel/blob/master/packages/babel-plugin-check-es2015-constants/test/fixtures/general/program/actual.js
 const MULTIPLIER = 5;
 
@@ -91,26 +89,5 @@ class Foo {
 
 var num = 1;
 num **= 2;
-console.log(num); // babel-plugin-transform-object-rest-spread
-// https://github.com/babel/babel/blob/6.x/packages/babel-plugin-transform-object-rest-spread/test/fixtures/object-spread/assignment/actual.js
-
-z = _objectSpread({
-    x
-}, y);
-z = {
-    x,
-    w: _objectSpread({}, y)
-}; // babel-plugin-transform-class-properties
-// https://github.com/babel/babel/blob/master/packages/babel-plugin-transform-class-properties/test/fixtures/loose/instance/actual.js
-
-class Bar {
-    constructor() {
-    this.bar = "foo";
-    }
-
-}
-registerDecorators(Bar, {
-    fields: ["bar"]
-});
-export { Bar, Test, literal, obj1, obj2, t, test };
-
+console.log(num);
+export { Test, literal, obj1, obj2, t, test };
