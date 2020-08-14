@@ -14,19 +14,18 @@ export default function ({ sourcemap }: NormalizedOutputConfig): Plugin {
     // Inlining the `babel-preset-compat` module require to only pay the parsing and evaluation cost for needed modules
     const presetCompat = require('babel-preset-compat');
 
-    const BABEL_CONFIG_CONFIG = {
+    const config = {
         ...BABEL_CONFIG_BASE,
         presets: [[presetCompat, { proxy: true }]],
+        sourceMaps: sourcemap,
     };
-
-    const config = Object.assign({}, BABEL_CONFIG_CONFIG, { sourceMaps: sourcemap });
 
     return {
         name: 'lwc-compat',
 
         transform(src: string) {
-            const { code, map } = babel.transform(src, config);
-            return { code, map };
+            const result = babel.transformSync(src, config)!;
+            return { code: result.code!, map: result.map };
         },
     };
 }
