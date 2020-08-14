@@ -171,29 +171,21 @@ function decorators({ types: t }) {
 
             state.decorators = decorators;
             state.decoratorImportSpecifiers = decoratorImportSpecifiers;
+        },
+        Class(path, state) {
+            removeDecorators(state.decorators);
+            removeImportSpecifiers(state.decoratorImportSpecifiers);
+            state.decorators = [];
+            state.decoratorImportSpecifiers = [];
+        },
 
-            path.traverse(
-                {
-                    Class(path, state) {
-                        removeDecorators(state.decorators);
-                        removeImportSpecifiers(state.decoratorImportSpecifiers);
-                        state.decorators = [];
-                        state.decoratorImportSpecifiers = [];
-                    },
+        Decorator(path) {
+            const AVAILABLE_DECORATORS = DECORATOR_TRANSFORMS.map((transform) => transform.name);
 
-                    Decorator(path) {
-                        const AVAILABLE_DECORATORS = DECORATOR_TRANSFORMS.map(
-                            (transform) => transform.name
-                        );
-
-                        throw generateError(path.parentPath, {
-                            errorInfo: DecoratorErrors.INVALID_DECORATOR,
-                            messageArgs: [AVAILABLE_DECORATORS.join(', '), LWC_PACKAGE_ALIAS],
-                        });
-                    },
-                },
-                state
-            );
+            throw generateError(path.parentPath, {
+                errorInfo: DecoratorErrors.INVALID_DECORATOR,
+                messageArgs: [AVAILABLE_DECORATORS.join(', '), LWC_PACKAGE_ALIAS],
+            });
         },
     };
 }

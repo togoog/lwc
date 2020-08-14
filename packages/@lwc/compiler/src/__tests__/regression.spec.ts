@@ -35,7 +35,7 @@ describe('regression test', () => {
 });
 
 describe('smoke test for babel transform', () => {
-    it('should transpile none stage-4 syntax features in none-compat', async () => {
+    it('should transpile shipped proposals features to ES2015 in none-compat mode', async () => {
         const { result } = await compile({
             name: 'babel',
             namespace: 'x',
