@@ -35,6 +35,9 @@ export default function scriptTransform(
 
     let result: babel.BabelFileResult;
     try {
+        // The LWC babel plugin doesn't play well when associated along with other plugins. We first
+        // run the LWC babel plugin and then run the rest of the transformation on the intermediary
+        // code.
         const intermediary = babel.transformSync(code, {
             ...BABEL_CONFIG_BASE,
             plugins: [
