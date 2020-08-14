@@ -4,9 +4,7 @@
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-const api = require('./api');
-const wire = require('./wire');
-const track = require('./track');
+const { DecoratorErrors } = require('@lwc/errors');
 
 const { LWC_PACKAGE_ALIAS, DECORATOR_TYPES, LWC_DECORATORS } = require('../constants');
 const {
@@ -16,7 +14,10 @@ const {
     isSetterClassMethod,
     isGetterClassMethod,
 } = require('../utils');
-const { DecoratorErrors } = require('@lwc/errors');
+
+const api = require('./api');
+const wire = require('./wire');
+const track = require('./track');
 
 const DECORATOR_TRANSFORMS = [api, wire, track];
 
@@ -170,22 +171,29 @@ function decorators({ types: t }) {
 
             state.decorators = decorators;
             state.decoratorImportSpecifiers = decoratorImportSpecifiers;
-        },
 
-        Class(path, state) {
-            removeDecorators(state.decorators);
-            removeImportSpecifiers(state.decoratorImportSpecifiers);
-            state.decorators = [];
-            state.decoratorImportSpecifiers = [];
-        },
+            path.traverse(
+                {
+                    Class(path, state) {
+                        removeDecorators(state.decorators);
+                        removeImportSpecifiers(state.decoratorImportSpecifiers);
+                        state.decorators = [];
+                        state.decoratorImportSpecifiers = [];
+                    },
 
-        Decorator(path) {
-            const AVAILABLE_DECORATORS = DECORATOR_TRANSFORMS.map((transform) => transform.name);
+                    Decorator(path) {
+                        const AVAILABLE_DECORATORS = DECORATOR_TRANSFORMS.map(
+                            (transform) => transform.name
+                        );
 
-            throw generateError(path.parentPath, {
-                errorInfo: DecoratorErrors.INVALID_DECORATOR,
-                messageArgs: [AVAILABLE_DECORATORS.join(', '), LWC_PACKAGE_ALIAS],
-            });
+                        throw generateError(path.parentPath, {
+                            errorInfo: DecoratorErrors.INVALID_DECORATOR,
+                            messageArgs: [AVAILABLE_DECORATORS.join(', '), LWC_PACKAGE_ALIAS],
+                        });
+                    },
+                },
+                state
+            );
         },
     };
 }

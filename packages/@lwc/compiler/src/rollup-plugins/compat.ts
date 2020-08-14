@@ -11,12 +11,9 @@ import { BABEL_CONFIG_BASE } from '../babel-plugins';
 import { NormalizedOutputConfig } from '../options';
 
 export default function ({ sourcemap }: NormalizedOutputConfig): Plugin {
-    // Inlining the `babel-preset-compat` module require to only pay the parsing and evaluation cost for needed modules
-    const presetCompat = require('babel-preset-compat');
-
     const config = {
         ...BABEL_CONFIG_BASE,
-        presets: [[presetCompat, { proxy: true }]],
+        presets: [['babel-preset-compat', { proxy: true }]],
         sourceMaps: sourcemap,
     };
 
