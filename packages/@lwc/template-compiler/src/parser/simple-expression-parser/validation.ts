@@ -54,7 +54,6 @@ export function validateParsedExpression(expression: ASTExpression, element: IRN
     let expr = expression;
 
     while (expr.type === 'MemberExpression') {
-        // @todo: isBoundToIterator validation have some room for optimizations, ex: no need to get the iterator name multiple times.
         invariant(
             !isBoundToIterator(expr.object as TemplateIdentifier, element) ||
                 expr.property.name !== ITERATOR_NEXT_KEY,
