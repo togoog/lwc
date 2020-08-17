@@ -130,7 +130,7 @@ function processExpression(parser: ExpressionParser): ASTExpression {
             throw new Error(
                 `Unexpected "${lookAhead}" character found at position ${parser.position}.`
             );
-        } else if (lookAhead === '}') {
+        } else if (lookAhead === '}' && leadingParenthesisInExpression === 0) {
             parser.eat('}');
             processing = false;
         } else {
