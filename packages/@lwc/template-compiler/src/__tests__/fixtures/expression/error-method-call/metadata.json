@@ -1,8 +1,8 @@
 {
     "warnings": [
         {
-            "code": 1060,
-            "message": "Invalid expression { Math.random() } - LWC1060: Template expression doesn't allow CallExpression",
+            "code": 1083,
+            "message": "LWC1083: Error parsing template expression: Invalid expression { Math.random() } - Unexpected \"(\" character found at position 13.",
             "level": 1,
             "location": {
                 "line": 2,

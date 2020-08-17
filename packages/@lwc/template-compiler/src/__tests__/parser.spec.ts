@@ -370,7 +370,8 @@ describe('expression', () => {
         const { warnings } = parseTemplate(`<template><input title={getTitle()} /></template>`);
         expect(warnings[0]).toMatchObject({
             level: DiagnosticLevel.Error,
-            message: `Invalid expression {getTitle()} - LWC1060: Template expression doesn't allow CallExpression`,
+            message:
+                'LWC1052: Error parsing attribute: Invalid expression {getTitle()} - Unexpected "(" character found at position 9.',
             location: EXPECTED_LOCATION,
         });
     });

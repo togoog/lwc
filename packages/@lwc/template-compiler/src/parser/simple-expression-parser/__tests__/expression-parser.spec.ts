@@ -11,14 +11,11 @@ const validExpressions = [
     `{   (  ( foo).
     bar)}`,
     '{foo.this.class}',
+    '{foo;}',
+    '{( foo ) ;    }',
 ];
 
-const invalidExpressions = [
-    '{this}',
-    '{for}',
-    '{switch}',
-    '{foo()}'
-];
+const invalidExpressions = ['{this}', '{for}', '{switch}', '{foo()}'];
 
 describe('parsing', () => {
     validExpressions.forEach((expr) => {
@@ -31,9 +28,8 @@ describe('parsing', () => {
     invalidExpressions.forEach((expr) => {
         it('invalid expressions', () => {
             expect(() => {
-                parseExpression(expr, undefined as any)
+                parseExpression(expr, undefined as any);
             }).toThrow();
         });
     });
-
 });

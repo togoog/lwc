@@ -1,3 +1,4 @@
+import { invariant, ParserDiagnostics } from '@lwc/errors';
 import { ASTExpression, ASTIdentifier } from './types';
 import { validateParsedExpression } from './validation';
 import { IRNode } from '../../shared/types';
@@ -124,12 +125,12 @@ function processExpression(parser: ExpressionParser): ASTExpression {
             parser.eat();
             leadingParenthesisInExpression--;
         } else if (lookAhead === ';') {
-            // @todo
             // this is an special case... if there's no other expression, to the right of ";" this is correct
             // otherwise we are in presence of multiple expressions, which is invalid.
-            throw new Error(
-                `Unexpected "${lookAhead}" character found at position ${parser.position}.`
-            );
+            parser.eat();
+            processWhiteSpaces(parser);
+
+            invariant(parser.peek() === '}', ParserDiagnostics.MULTIPLE_EXPRESSIONS);
         } else if (lookAhead === '}' && leadingParenthesisInExpression === 0) {
             parser.eat('}');
             processing = false;

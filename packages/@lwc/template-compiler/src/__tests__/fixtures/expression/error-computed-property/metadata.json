@@ -1,8 +1,8 @@
 {
     "warnings": [
         {
-            "code": 1038,
-            "message": "Invalid expression {val[state.foo]} - LWC1038: Template expression doesn't allow computed property access",
+            "code": 1083,
+            "message": "LWC1083: Error parsing template expression: Invalid expression {val[state.foo]} - Unexpected \"[\" character found at position 4.",
             "level": 1,
             "location": {
                 "line": 1,
