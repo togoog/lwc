@@ -1,6 +1,8 @@
 import { ASTExpression, ASTIdentifier } from './types';
+import { validateParsedExpression } from './validation';
+import { IRNode } from '../../shared/types';
 
-const WHITESPACE = new Set([' ', "\t", "\r", "\n"]);
+const WHITESPACE = new Set([' ', '\t', '\v', '\f', '\r', '\n']);
 
 interface ExpressionParser {
     position: number;
@@ -44,10 +46,14 @@ function createParser(str: string, offset: number = 0): ExpressionParser {
     };
 }
 
+function isWhiteSpace(character: string): boolean {
+    return WHITESPACE.has(character);
+}
+
 function processIdentifier(parser: ExpressionParser): ASTIdentifier {
     let buffer = '';
 
-    if (WHITESPACE.has(parser.peek())) {
+    if (isWhiteSpace(parser.peek())) {
         processWhiteSpaces(parser);
     }
 
@@ -62,7 +68,7 @@ function processIdentifier(parser: ExpressionParser): ASTIdentifier {
 }
 
 function processWhiteSpaces(parser: ExpressionParser) {
-    while (WHITESPACE.has(parser.peek())) {
+    while (isWhiteSpace(parser.peek())) {
         parser.eat();
     }
 }
@@ -75,13 +81,15 @@ function processLeadingParenthesis(parser: ExpressionParser): number {
     do {
         lookAhead = parser.peek();
 
-        if (WHITESPACE.has(lookAhead)) {
+        if (isWhiteSpace(lookAhead)) {
             processWhiteSpaces(parser);
         } else if (lookAhead === '(') {
             parser.eat();
             numberOfOpenParenthesis++;
         } else if (lookAhead === ')') {
-            throw new Error(`Unexpected "${lookAhead}" character found at position ${parser.position}.`);
+            throw new Error(
+                `Unexpected "${lookAhead}" character found at position ${parser.position}.`
+            );
         } else {
             processing = false;
         }
@@ -110,7 +118,7 @@ function processExpression(parser: ExpressionParser): ASTExpression {
                 object: expression,
                 property: processIdentifier(parser),
             };
-        } else if (WHITESPACE.has(lookAhead)) {
+        } else if (isWhiteSpace(lookAhead)) {
             processWhiteSpaces(parser);
         } else if (lookAhead === ')' && leadingParenthesisInExpression > 0) {
             parser.eat();
@@ -119,19 +127,23 @@ function processExpression(parser: ExpressionParser): ASTExpression {
             // @todo
             // this is an special case... if there's no other expression, to the right of ";" this is correct
             // otherwise we are in presence of multiple expressions, which is invalid.
-            throw new Error(`Unexpected "${lookAhead}" character found at position ${parser.position}.`);
+            throw new Error(
+                `Unexpected "${lookAhead}" character found at position ${parser.position}.`
+            );
         } else if (lookAhead === '}') {
             parser.eat('}');
             processing = false;
         } else {
-            throw new Error(`Unexpected "${lookAhead}" character found at position ${parser.position}.`);
+            throw new Error(
+                `Unexpected "${lookAhead}" character found at position ${parser.position}.`
+            );
         }
     }
 
     return expression;
 }
 
-export function parseExpression(str: string): ASTExpression {
+export function parseExpression(str: string, element: IRNode): ASTExpression {
     const parser = createParser(str);
     const expression = processExpression(parser);
 
@@ -139,29 +151,7 @@ export function parseExpression(str: string): ASTExpression {
         throw new Error('Unexpected end of expression');
     }
 
+    validateParsedExpression(expression, element);
+
     return expression;
-}
-
-export function parseExpressionAt(
-    str: string,
-    offset: number
-): { expression: ASTExpression; offset: number } {
-    const parser = createParser(str, offset);
-    const expression = processExpression(parser);
-
-    return {
-        expression,
-        offset: parser.position,
-    };
-}
-
-export function parseIdentifer(str: string): ASTIdentifier {
-    const parser = createParser(str);
-    const identifier = processIdentifier(parser);
-
-    if (parser.position !== str.length) {
-        throw new Error('Unexpected identifier');
-    }
-
-    return identifier;
 }

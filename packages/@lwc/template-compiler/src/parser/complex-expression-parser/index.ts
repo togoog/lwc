@@ -9,7 +9,11 @@ import { TemplateExpression, TemplateIdentifier, IRNode } from '../../shared/typ
 const ITERATOR_NEXT_KEY = 'next';
 
 // FIXME: Avoid throwing errors and return it properly
-export function parseComplexExpression(source: string, element: IRNode, state: State): TemplateExpression {
+export function parseComplexExpression(
+    source: string,
+    element: IRNode,
+    state: State
+): TemplateExpression {
     try {
         const parsed = babylon.parse(source);
 
@@ -51,7 +55,7 @@ export function parseComplexExpression(source: string, element: IRNode, state: S
                     const objectIdentifier = memberExpression.object as TemplateIdentifier;
                     invariant(
                         !isBoundToIterator(objectIdentifier, element) ||
-                        propertyIdentifier.name !== ITERATOR_NEXT_KEY,
+                            propertyIdentifier.name !== ITERATOR_NEXT_KEY,
                         ParserDiagnostics.MODIFYING_ITERATORS_NOT_ALLOWED
                     );
                 },

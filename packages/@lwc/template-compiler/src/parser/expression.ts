@@ -11,7 +11,7 @@ import { ParserDiagnostics, generateCompilerError } from '@lwc/errors';
 import { TemplateExpression, TemplateIdentifier, IRNode, IRElement } from '../shared/types';
 import { parseComplexExpression } from './complex-expression-parser';
 import { parseExpression as parseSimpleExpression } from './simple-expression-parser';
-import State from "../state";
+import State from '../state';
 
 export const EXPRESSION_SYMBOL_START = '{';
 export const EXPRESSION_SYMBOL_END = '}';
@@ -28,19 +28,16 @@ export function isPotentialExpression(source: string): boolean {
 }
 
 export function parseExpression(source: string, element: IRNode, state: State): TemplateExpression {
-    if (!state.config.experimentalComputedMemberExpression) {
-        try {
-            const expr = parseSimpleExpression(source) as TemplateExpression;
-            return expr;
-        } catch (e) {
-            // The error may be hard to read, lets swallow this exception and use the complex parser for better errors
-            // @todo: Improve some errors from the simple expression parser
-            e.message = 'ahahhaa';
-            throw e;
-        }
+    if (state.config.experimentalComputedMemberExpression) {
+        return parseComplexExpression(source, element, state);
     }
 
-    return parseComplexExpression(source, element, state);
+    try {
+        return parseSimpleExpression(source, element) as TemplateExpression;
+    } catch (err) {
+        err.message = `Invalid expression ${source} - ${err.message}`;
+        throw err;
+    }
 }
 
 export function parseIdentifier(source: string): TemplateIdentifier | never {
